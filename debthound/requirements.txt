@@ -8,3 +8,5 @@ marshmallow-sqlalchemy
 python-dotenv
 passlib
 tox
+appdirs==1.4.3
+requests
