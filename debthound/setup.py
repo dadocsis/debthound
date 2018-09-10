@@ -4,7 +4,7 @@ __version__ = '0.1'
 
 
 setup(
-    name='data_api',
+    name='debthound',
     version=__version__,
     packages=find_packages(exclude=['tests']),
     install_requires=[
