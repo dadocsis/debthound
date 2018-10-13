@@ -13,7 +13,7 @@ like a redis or a memcached server.
 
 This example is heavily inspired by https://github.com/vimalloc/flask-jwt-extended/blob/master/examples/database_blacklist/
 """
-from data_api.extensions import db
+from web_api.extensions import db
 
 
 class TokenBlacklist(db.Model):

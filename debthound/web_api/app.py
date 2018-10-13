@@ -1,13 +1,15 @@
 from flask import Flask
+from flask_cors import CORS
 
-from data_api import auth, api
-from data_api.extensions import db, jwt, migrate
+from web_api import auth, api
+from web_api.extensions import db, jwt, migrate
 
 
 def create_app(config=None, testing=False, cli=False):
     """Application factory, used to create application
     """
     app = Flask('data_api')
+    CORS(app)
 
     configure_app(app, testing)
     configure_extensions(app, cli)
@@ -20,11 +22,11 @@ def configure_app(app, testing=False):
     """set configuration for application
     """
     # default configuration
-    app.config.from_object('data_api.config')
+    app.config.from_object('web_api.config')
 
     if testing is True:
         # override with testing config
-        app.config.from_object('data_api.configtest')
+        app.config.from_object('web_api.configtest')
     else:
         # override with env variable, fail silently if not set
         app.config.from_envvar("DATA_API_CONFIG", silent=True)

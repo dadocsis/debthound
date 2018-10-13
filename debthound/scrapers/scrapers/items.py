@@ -24,3 +24,4 @@ class PBCPublicRecord(scrapy.Item):
     pages = scrapy.Field()
     image_uri = scrapy.Field()
     consideration = scrapy.Field()
+    info = scrapy.Field()

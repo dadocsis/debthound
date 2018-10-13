@@ -1,11 +1,11 @@
 from __future__ import with_statement
 from alembic import context
 from sqlalchemy import create_engine
+from sqlalchemy.engine.url import make_url
 from logging.config import fileConfig
-import sys
-print(sys.path)
 
-from debthound.data_api.models import Base
+
+from data_api.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,8 +29,6 @@ target_metadata = Base.metadata
 
 def get_url():
     url = context.get_x_argument(as_dictionary=True).get('url')
-    print(url)
-    print('somethin')
     assert url, "Database URL must be specified on command line with -x url=<DB_URL>"
     return url
 
@@ -62,7 +60,17 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = create_engine(get_url())
+    url = make_url(get_url())
+    database = url.database
+    url.database = "sys"
+    connectable = create_engine(url)
+    existing_databases = connectable.execute("SHOW DATABASES;")
+
+    if not next(iter([d[0] for d in existing_databases if d[0] == database]), None):
+        connectable.execute("CREATE DATABASE {0}".format(database))
+
+    url.database = database
+    connectable = create_engine(url)
 
     with connectable.connect() as connection:
         context.configure(

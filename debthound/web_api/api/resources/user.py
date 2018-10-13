@@ -2,9 +2,9 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
-from data_api.models import User
-from data_api.extensions import ma, db
-from data_api.commons.pagination import paginate
+from web_api.models import User
+from web_api.extensions import ma, db
+from web_api.commons.pagination import paginate
 
 
 class UserSchema(ma.ModelSchema):

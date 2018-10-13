@@ -1,3 +1,13 @@
+## DB setup:
+- create debthound db
+- migrate:
+    - ```alembic -x url=mysql+pymysql://root:****@localhost/debthound revision --autogenerate```
+    - ```alembic -x url=mysql+pymysql://root:****@localhost/debthound upgrade head```
+
 
 set http_proxy=http://localhost:17560
-scrapy crawl pbc -s FEED_URI="file:///c:\users\az0001\Documents\scrape\pbc.csv" -s FEED_FORMAT=csv -a start_date=09/03/2008 -a end_date=09/03/2018 -s LOG_FILE="c:\\users\\az0001\\Documents\\scrape\\log.txt" -s LOG_LEVEL=INFO
+
+##to file
+```scrapy crawl pbc -s FEED_URI="file:///c:\users\az0001\Documents\scrape\pbc.csv" -s FEED_FORMAT=csv -a start_date=09/03/2008 -a end_date=09/03/2018 -s LOG_FILE="c:\\users\\az0001\\Documents\\scrape\\log.txt" -s LOG_LEVEL=INFO```
+##to database
+```scrapy crawl pbc -s MYSQL_URL=mysql+pymysql://root:alishappy@localhost/debthound -a start_date=01/03/2011 -a end_date=01/04/2011 -s LOG_FILE="c:\\users\\Al\\Documents\\scrape\\log.txt" -s LOG_LEVEL=INFO```

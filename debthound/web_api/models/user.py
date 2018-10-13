@@ -1,4 +1,4 @@
-from data_api.extensions import db, pwd_context
+from web_api.extensions import db, pwd_context
 
 
 class User(db.Model):

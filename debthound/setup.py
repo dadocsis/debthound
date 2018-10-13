@@ -6,7 +6,7 @@ __version__ = '0.1'
 setup(
     name='debthound',
     version=__version__,
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests'], include=['scrapers.scrapers']),
     install_requires=[
         'flask',
         'flask-sqlalchemy',
@@ -16,11 +16,15 @@ setup(
         'flask-marshmallow',
         'marshmallow-sqlalchemy',
         'python-dotenv',
-        'passlib'
+        'passlib',
+        'alembic',
+        'sqlalchemy',
+        'pymysql',
+        'scrapy',
     ],
     entry_points={
         'console_scripts': [
-            'data_api = data_api.manage:cli'
+            'web_api = web_api.manage:cli'
         ]
     }
 )

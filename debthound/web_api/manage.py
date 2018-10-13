@@ -1,7 +1,7 @@
 import click
 from flask.cli import FlaskGroup
 
-from data_api.app import create_app
+from web_api.app import create_app
 
 
 def create_data_api(info):
@@ -18,8 +18,8 @@ def init():
     """Init application, create database tables
     and create a new user named admin with password admin
     """
-    from data_api.extensions import db
-    from data_api.models import User
+    from web_api.extensions import db
+    from web_api.models import User
     click.echo("create database")
     db.create_all()
     click.echo("done")

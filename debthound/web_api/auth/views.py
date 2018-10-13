@@ -8,9 +8,9 @@ from flask_jwt_extended import (
     get_raw_jwt
 )
 
-from data_api.models import User
-from data_api.extensions import pwd_context, jwt
-from data_api.auth.helpers import (
+from web_api.models import User
+from web_api.extensions import pwd_context, jwt
+from web_api.auth.helpers import (
     revoke_token,
     is_token_revoked,
     add_token_to_database

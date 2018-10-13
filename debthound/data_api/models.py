@@ -1,11 +1,23 @@
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, DeferredReflection
 from sqlalchemy import (Column, Integer, String, VARCHAR, DECIMAL, Date,
-                        DateTime, JSON)
-from sqlalchemy import ForeignKey, Table
-from sqlalchemy.orm import relationship
+                        DateTime, JSON, Index)
+from sqlalchemy import ForeignKey, Table, create_engine
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+from sqlalchemy.sql import expression
+from sqlalchemy.ext.compiler import compiles
 
 
 Base = declarative_base()
+Deferred_Base = declarative_base(DeferredReflection)
+
+
+class utcnow(expression.FunctionElement):
+    type = DateTime()
+
+
+@compiles(utcnow, 'mysql')
+def ms_utcnow(element, compiler, **kw):
+    return "CURRENT_TIMESTAMP"
 
 
 class AuthType(Base):
@@ -17,7 +29,7 @@ class AuthType(Base):
 
 sitedoctype_asoc = Table('sitedoctype_association', Base.metadata,
                     Column('site_id', Integer, ForeignKey('site.id')),
-                    Column('doctype_id', Integer, ForeignKey('doctype.id')))
+                    Column('doctype_id', Integer, ForeignKey('sitedoctype.id')))
 
 
 class Site(Base):
@@ -27,7 +39,8 @@ class Site(Base):
     last_scrape_datetime = Column(DateTime)
     creds = Column(JSON)
     auth_type_id = Column(Integer, ForeignKey('authtype.id'))
-    doctypes = relationship("DocType", secondary=sitedoctype_asoc, backref='sites')
+    doctypes = relationship("SiteDocType", secondary=sitedoctype_asoc, backref='sites')
+    scrape_logs = relationship('SiteScrapeLog', back_populates='site')
 
 
 class SiteDocType(Base):
@@ -48,16 +61,23 @@ class Document(Base):
     date = Column(Date)
     image_uri = Column(VARCHAR(800))
     legal = Column(String(200))
-    name = String(200)
+    name = Column(String(200))
     page = Column(String(50))
     pages = Integer
-    party1 = Column(VARCHAR(500))
-    party2 = Column(VARCHAR(500))
-    doctype_id = Column(Integer, ForeignKey(SiteDocType.id))
+    party1 = Column(VARCHAR(1500))
+    party2 = Column(VARCHAR(1500))
+    doctype_id = Column(Integer, ForeignKey(SiteDocType.id), nullable=False)
     doc_type = relationship(SiteDocType, backref='documents')
-    site_id = Column(Integer, ForeignKey('site.id'))
-    flags = relationship('DocumentFlag', secondary='documentflag_association',
-                         backref='documents')
+    site_id = Column(Integer, ForeignKey('site.id'), nullable=False)
+    site = relationship(Site)
+    flags = relationship('DocumentFlag', secondary='documentflag_association', backref='documents')
+    info = Column('info', VARCHAR(1000))
+
+
+Index('party1', Document.party1, mysql_length=100)
+Index('party2', Document.party2, mysql_length=100)
+Index('date', Document.date)
+Index('cfn', Document.cfn, unique=True)
 
 
 class DocumentFlag(Base):
@@ -70,3 +90,72 @@ class DocumentFlag(Base):
 Table('documentflag_association', Base.metadata,
       Column('document_id', Integer, ForeignKey(Document.id)),
       Column('documentflag_id', Integer, ForeignKey(DocumentFlag.id)))
+
+
+class SiteScrapeLog(Base):
+    __tablename__ = 'sitescrapelog'
+    id = Column('id', Integer, primary_key=True)
+    start_datetime = Column('start_datetime', DateTime, nullable=False)
+    end_datetime = Column('end_datetime', DateTime)
+    params = Column('params', VARCHAR(500))
+    error = Column('error', VARCHAR(5000))
+    site_id = Column('site_id', Integer, ForeignKey(Site.id), nullable=False)
+    site = relationship(Site, back_populates='scrape_logs')
+    log_details = relationship('SiteScrapeLogDetails', back_populates='site_scrape_log')
+
+
+class SiteScrapeLogDetails(Base):
+    __tablename__ = 'sitescrapelogdetails'
+    id = Column('id', Integer, primary_key=True)
+    site_scrape_log_id = Column('site_scrape_log_id', Integer, ForeignKey(SiteScrapeLog.id), nullable=False)
+    site_scrape_log = relationship(SiteScrapeLog, back_populates='log_details')
+    message = Column('message', VARCHAR(1000), nullable=False)
+    info = Column('info', VARCHAR(1000))
+    time_stamp = Column('time_stamp', DateTime, server_default=utcnow())
+
+
+class Entity(Base):
+    __tablename__ = 'entity'
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', VARCHAR(1500), nullable=False)
+    document_facts = relationship('DocumentFact', back_populates='entity')
+
+
+Index('idx_name', Entity.name, mysql_length=100)
+
+
+class DocumentFact(Base):
+    __tablename__ = 'documentfact'
+    id = Column('id', Integer, primary_key=True)
+    document_id = Column(Integer, ForeignKey(Document.id), nullable=False)
+    document = relationship(Document)
+    entity_id = Column(Integer, ForeignKey(Entity.id), nullable=False)
+    entity = relationship(Entity, back_populates='document_facts')
+
+
+class ETL(DeferredReflection):
+    __tablename__ = 'work_document_etl'
+
+
+class SessionContext:
+    def __init__(self, url, logger=None):
+        self.engine = create_engine(url)
+        self.session = None
+        self.logger = None
+
+    def __enter__(self):
+        self.session = sessionmaker(self.engine)()
+        return self.session
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.session.rollback()
+            if self.logger:
+                self.logger.exception(exc_val)
+        self.session.close()
+
+
+def get_scoped(url):
+    eng = create_engine(url)
+    s = scoped_session(sessionmaker(bind=eng))
+    return s
