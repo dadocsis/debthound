@@ -2,7 +2,7 @@ import click
 from flask.cli import FlaskGroup
 
 from web_api.app import create_app
-
+from web_api import config
 
 def create_data_api(info):
     return create_app(cli=True)
@@ -28,7 +28,7 @@ def init():
     user = User(
         username='admin',
         email='admin@mail.com',
-        password='admin',
+        password=config.ADMIN_PW,
         active=True
     )
     db.session.add(user)

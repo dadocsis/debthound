@@ -1,10 +1,11 @@
 import React from 'react';
 
 const AboutPage = (props) => (
-    <div>
+    <div className='container'>
         <h1>About</h1>
-        <p>Lead generation and management application for Certified Judgments </p>
-        <p> Developed and owned by Zsoft Inc. </p>
+        <div className="footer-copyright py-3">Lead generation and management application for Certified Judgments </div>
+        <div className="footer-copyright py-3">© Premier Jugments Collections, Inc. All rights reserved
+        </div>
     </div>
 );
 

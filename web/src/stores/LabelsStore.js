@@ -11,24 +11,28 @@ class LabelsStore extends ReduceStore{
     }
 
     getInitialState() {
-        return Map();
+        return Immutable.Map({results: Immutable.List()});
     }
 
     reduce(state, action) {
-        // switch (action.type) {
-        //     case ActionTypes.VIEW_LEAD:
-        //         return state.merge(Map({isLoading: true, id: action.id}));
-        //     case ActionTypes.RCV_LEAD_DOCS:
-        //         return state.merge(Map({
-        //             docs: fromJS(action.docs),
-        //             isLoading: false,
-        //             currentPage: action.currentPage
-        //         }));
-        //
-        //     default:
-        //         return state;
-        //}
-        return state;
+        switch (action.type) {
+            case ActionTypes.LABEL_CREATED:
+                let results = state.get('results').push(Map(action.rsp.flag));
+                return state.merge(Map({
+                    isLoading: false,
+                    results: results}));
+            case ActionTypes.RCV_LABELS:
+                return state.merge(Immutable.fromJS(action.rsp)).set('isLoading', false)
+                    .set('currentPage', action.currentPage);
+            case ActionTypes.GET_LABELS:
+                return state.set('isLoading', true);
+            case ActionTypes.LABEL_DELETED:
+                let idx = state.get('results').findIndex((l, idx) => l.id === action.id);
+                let newResults = state.get('results').delete(idx);
+                return state.set('results', newResults);
+            default:
+                return state;
+        }
     }
 }
 

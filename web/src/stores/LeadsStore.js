@@ -20,6 +20,13 @@ class LeadsStore extends ReduceStore{
             case ActionTypes.RCV_LEADS:
                 return state.merge(Immutable.fromJS(action.response)).set('isLoading', false)
                     .set('currentPage', action.currentPage);
+
+            case ActionTypes.LEAD_UPDATED:
+                let leads = state.get("results").toJS();
+                let thisLeadIdx = leads.findIndex(l => l.id === action.lead.id);
+                leads[thisLeadIdx] = action.lead;
+                return state.set("results", Immutable.fromJS(leads));
+
           default:
             return state;
         }

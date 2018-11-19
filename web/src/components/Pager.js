@@ -30,7 +30,7 @@ class Pager extends React.Component {
                     {this.props.currentPage}</button></li>))
 
         for (let i=this.props.currentPage+1; i <= PREV_NEXT_COUNT + this.props.currentPage; i++){
-            if (i >= this.props.pages) break;
+            if (i >= this.props.totalPages) break;
             key++;
             leadingPages.push((<li className="page-item" key={key}>
                 <button className="page-link" onClick={() => this.pageClick(i)}>

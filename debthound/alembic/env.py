@@ -27,6 +27,22 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+def exclude_tables_from_config(config_):
+    tables_ = config_.get("tables", None)
+    if tables_ is not None:
+        tables = tables_.split(",")
+    return tables
+
+
+exclude_tables = exclude_tables_from_config(config.get_section('alembic:exclude'))
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table" and name in exclude_tables:
+        return False
+    else:
+        return True
+
 def get_url():
     url = context.get_x_argument(as_dictionary=True).get('url')
     assert url, "Database URL must be specified on command line with -x url=<DB_URL>"
@@ -47,7 +63,7 @@ def run_migrations_offline():
     """
     url = get_url()
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True)
+        url=url, target_metadata=target_metadata, literal_binds=True, include_object=include_object)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -75,7 +91,8 @@ def run_migrations_online():
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
+            include_object=include_object
         )
 
         with context.begin_transaction():

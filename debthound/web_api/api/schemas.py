@@ -1,6 +1,6 @@
 from data_api import models as m
 from web_api.extensions import ma, db
-from marshmallow.fields import Float, Nested
+from marshmallow.fields import Float, Nested, Int, List
 
 
 class EntityModelWrapped(db.Model, m.Entity):
@@ -37,15 +37,23 @@ class DocumentSchema(ma.ModelSchema):
         sqla_session = db.session
 
 
+class FlagModelWrapped(db.Model, m.EntityFlag):
+    pass
+
+
+class FlagSchema(ma.ModelSchema):
+    class Meta:
+        model = FlagModelWrapped
+        sqla_session = db.session
+
+
 class EntitySchema(ma.ModelSchema):
     class Meta:
         model = EntityModelWrapped
         sqla_session = db.session
+    flags = Nested(FlagSchema, many=True)
 
 
-class FlagModelWrapped(db.Model, m.Entity):
-    pass
-
-class FlagSchema(ma.ModelSchema):
-    class Meta:
-        model = ''
+class EntityBatchUpdateSchema(ma.Schema):
+    id = Int()
+    flags = List(Int())

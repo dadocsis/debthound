@@ -11,9 +11,9 @@ secrets.read(file)
 
 DEBUG = True
 ENV = os.environ.get('ENV', 'local')
-SECRET_KEY = "changeme"
+SECRET_KEY = secrets.get(ENV, 'sk')
+ADMIN_PW = secrets.get(ENV, 'admin_pw')
 
-# todo: change this
 SQLALCHEMY_DATABASE_URI = secrets.get(ENV, 'db_uri')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -119,6 +119,19 @@ class Entity(Base):
     id = Column('id', Integer, primary_key=True)
     name = Column('name', VARCHAR(1500), nullable=False)
     document_facts = relationship('DocumentFact', back_populates='entity')
+    flags = relationship('EntityFlag', secondary='entity_flag_association', enable_typechecks=False)
+
+
+class EntityFlag(Base):
+    __tablename__ = 'entityflag'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False)
+    description = Column(String(50))
+
+
+Table('entity_flag_association', Base.metadata,
+      Column('entity_id', Integer, ForeignKey(Entity.id)),
+      Column('entity_flag_id', Integer, ForeignKey(EntityFlag.id)))
 
 
 Index('idx_name', Entity.name, mysql_length=100)

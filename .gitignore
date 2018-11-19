@@ -103,3 +103,4 @@ ENV/
 .mypy_cache/
 .idea/
 debthound/.flaskenv
+debthound/secrets.ini

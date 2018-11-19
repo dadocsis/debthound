@@ -43,7 +43,9 @@ def login():
 
     ret = {
         'access_token': access_token,
-        'refresh_token': refresh_token
+        'refresh_token': refresh_token,
+        'username': user.username,
+        'userid': user.id
     }
     return jsonify(ret), 200
 

@@ -11,14 +11,22 @@ if (process != undefined){
 function getUrl(path, params={}){
     let url = new URL(origin + path);
     for (let k in params){
-        url.searchParams.append(k, params[k])
+        if (Array.isArray(params[k])){
+            for (let n in params[k]){
+                url.searchParams.append(k, params[k][n])
+            }
+        }
+        else {
+            url.searchParams.append(k, params[k])
+        }
     }
     return url;
 }
 
-export const getEntities = (page, func, ehandle=defaultEhandle) => {
+export const getEntities = (page, args, func, ehandle=defaultEhandle) => {
      // todo fetch something
-      fetch(getUrl('/api/v1/entities', {page}), {
+    let myUrl = getUrl('/api/v1/entities', {page, ...args});
+     fetch(myUrl, {
           headers : {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -39,7 +47,7 @@ const defaultEhandle = (rsp) => {
 };
 
 export const getDocumentsForLead = (id, func, ehandle=defaultEhandle) => {
-          fetch(getUrl('/api/v1/entities/' + id + '/documents'), {
+    fetch(getUrl('/api/v1/entities/' + id + '/documents'), {
           headers : {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -51,4 +59,134 @@ export const getDocumentsForLead = (id, func, ehandle=defaultEhandle) => {
             }
             rsp.json().then(json => func(json))
         }, ehandle)
-}
+};
+
+export const saveLabel = (label, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/flags'), {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(label), // body data type must match "Content-Type" header
+    })
+    .then(rsp => {
+            if (!rsp.ok) {
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const getLables = (page, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/flags'), {
+          headers : {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }})
+        .then(rsp => {
+            if (!rsp.ok){
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const deleteLabel = (id, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/flags/' + id), {
+        method: "DELETE", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+
+    })
+    .then(rsp => {
+            if (!rsp.ok) {
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const updateLeadLables = (data, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/updateLeadLables'), {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(rsp => {
+            if (!rsp.ok) {
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const updateLead = (data, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/entities/' + data.id), {
+        method: "PATCH", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(rsp => {
+            if (!rsp.ok) {
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const loginUser = (data, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/auth/login'), {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(rsp => {
+            if (!rsp.ok) {
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
