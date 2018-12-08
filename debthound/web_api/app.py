@@ -12,6 +12,7 @@ def create_app(config=None, testing=False, cli=False):
     CORS(app)
 
     configure_app(app, testing)
+    app.config['PROPAGATE_EXCEPTIONS'] = True
     configure_extensions(app, cli)
     register_blueprints(app)
 

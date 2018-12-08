@@ -1,10 +1,11 @@
 from sqlalchemy.ext.declarative import declarative_base, DeferredReflection
 from sqlalchemy import (Column, Integer, String, VARCHAR, DECIMAL, Date,
-                        DateTime, JSON, Index)
+                        DateTime, JSON, Index, BOOLEAN, TIME)
 from sqlalchemy import ForeignKey, Table, create_engine
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 from sqlalchemy.sql import expression
 from sqlalchemy.ext.compiler import compiles
+import datetime
 
 
 Base = declarative_base()
@@ -36,11 +37,14 @@ class Site(Base):
     __tablename__ = 'site'
     id = Column(Integer, primary_key=True)
     base_url = Column(String(200))
-    last_scrape_datetime = Column(DateTime)
+    last_scrape_datetime = Column(DateTime, nullable=False, default=datetime.datetime.min)
     creds = Column(JSON)
     auth_type_id = Column(Integer, ForeignKey('authtype.id'))
     doctypes = relationship("SiteDocType", secondary=sitedoctype_asoc, backref='sites')
     scrape_logs = relationship('SiteScrapeLog', back_populates='site')
+    spider_name = Column(String(50), nullable=False)
+    schedules = relationship('Schedule', back_populates='site')
+    last_poll_datetime = Column(DateTime, nullable=False, default=datetime.datetime.min)
 
 
 class SiteDocType(Base):
@@ -135,6 +139,18 @@ Table('entity_flag_association', Base.metadata,
 
 
 Index('idx_name', Entity.name, mysql_length=100)
+
+
+class Schedule(Base):
+    __tablename__ = 'schedule'
+    id = Column(Integer, primary_key=True)
+    day = Column(Integer, nullable=False)
+    exact = Column(BOOLEAN, nullable=False)
+    time = Column(TIME, nullable=False)
+    start = Column(Date, nullable=False)
+    end = Column(Date, nullable=False)
+    site_id = Column(Integer, ForeignKey(Site.id))
+    site = relationship(Site, back_populates='schedules')
 
 
 class DocumentFact(Base):

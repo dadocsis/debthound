@@ -10,7 +10,7 @@ secrets = ConfigParser()
 secrets.read(file)
 
 DEBUG = True
-ENV = os.environ.get('ENV', 'local')
+ENV = os.environ.get('ENV', 'prod')
 SECRET_KEY = secrets.get(ENV, 'sk')
 ADMIN_PW = secrets.get(ENV, 'admin_pw')
 
@@ -19,3 +19,4 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 JWT_BLACKLIST_ENABLED = True
 JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+JWT_ACCESS_TOKEN_EXPIRES = False

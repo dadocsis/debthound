@@ -1,6 +1,6 @@
 import Actions from '../Actions'
-import {getEntities, getDocumentsForLead, saveLabel, getLables, deleteLabel as _deleteLabel,
-        updateLeadLables, updateLead as _updateLead, loginUser} from "./api";
+import {getEntities, getDocumentsForLead, saveLabel, getLables, deleteLabel as _deleteLabel, deleteSchedule as _deleteSchedule,
+        updateLeadLables, updateLead as _updateLead, loginUser, getSchedules, saveSchedule, getSites} from "./api";
 
 export const fetchLeads = (page=1, args={}) => {
     Actions.getEntities();
@@ -61,4 +61,20 @@ export const userLogin = (userName, pw) => {
                 alert('unhandled error while logging in user')
             }
         })
+};
+
+export const fetchSchedules = (page=1) => {
+    Actions.getSchedules();
+    getSchedules(page, (rsp) => Actions.rcvSchedules(rsp, page))
+    getSites(rsp => Actions.rcvSites(rsp))
+};
+
+export const saveDraftSchedule = (schedules) => {
+    for (let schedule of schedules) {
+        saveSchedule(schedule, Actions.scheduleCreated)
+    }
+};
+
+export const deleteSchedule = (id) => {
+    _deleteSchedule(id, rsp => Actions.scheduleDeleted(id))
 };

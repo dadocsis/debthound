@@ -13,9 +13,10 @@ from dateutil.relativedelta import relativedelta
 from scrapy.utils.response import open_in_browser
 
 from scrapers.items import PBCPublicRecord
+from scrapers.spiders.base import MyBaseSpider
 
 
-doctypes = ['JUD C', 'D']
+doctypes = ['JUD C', 'D', 'SAT']
 
 
 def get_form_data(search_entry, from_date, to_date):
@@ -31,7 +32,7 @@ def get_form_data(search_entry, from_date, to_date):
     }
 
 
-class PBC(scrapy.Spider):
+class PBC(MyBaseSpider):
     name = 'pbc'
     start_urls = ['http://oris.co.palm-beach.fl.us/or_web1/new_sch.asp']
     id = 'http://oris.co.palm-beach.fl.us'
@@ -40,14 +41,6 @@ class PBC(scrapy.Spider):
     init_start_date = date.today() - relativedelta(years=10)
     init_days_increment = 7
     page_size = 2000
-
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        settings = crawler.settings
-        sql = settings.get('MYSQL_URL')
-        spider = cls(mysql_url=sql, **kwargs)
-        spider._set_crawler(crawler)
-        return spider
 
     def __init__(self, *args, **kwargs):
         super(PBC, self).__init__(*args, **kwargs)
@@ -72,13 +65,8 @@ class PBC(scrapy.Spider):
         else:
             self._to_date = self._max_date
 
-        assert self._max_date <= date.today()
+        self._max_date = self._max_date if self._max_date <= date.today() else date.today()
         assert self._from_date < self._to_date
-        self._keys = defaultdict(set)
-
-    @staticmethod
-    def _increment_days(begin_date, days):
-        return begin_date + relativedelta(days=days)
 
     def start_requests(self):
         print('starting requests')
@@ -220,8 +208,4 @@ class PBC(scrapy.Spider):
             item['book_type'] = book_type
             yield item
 
-    def check_key(self, key, value):
-        if key in self._keys[value]:
-            return True
-        self._keys[value].add(key)
-        return False
+

@@ -6,7 +6,8 @@ __version__ = '0.1'
 setup(
     name='debthound',
     version=__version__,
-    packages=find_packages(exclude=['tests'], include=['scrapers.scrapers']),
+    packages=find_packages(exclude=['tests']),
+    include_package_data=True,
     install_requires=[
         'flask',
         'flask-sqlalchemy',
@@ -21,10 +22,13 @@ setup(
         'sqlalchemy',
         'pymysql',
         'scrapy',
+        'scrapyd',
+        'schedule'
     ],
     entry_points={
         'console_scripts': [
             'web_api = web_api.manage:cli'
-        ]
+        ],
+        'scrapy': ['settings = scrapers.settings']
     }
 )

@@ -1,17 +1,15 @@
-from flask import request, current_app
+from flask import request
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import joinedload, defer, load_only, noload, defaultload
-
-from data_api import models as m
 from web_api.api import schemas as s
-from web_api.extensions import ma, db
+from web_api.extensions import db
+from web_api.auth.helpers import jwt_or_local_only as jwt_required
 
 from web_api.commons.pagination import paginate
 
 
 class Flags(Resource):
+    method_decorators = [jwt_required]
+
     def get(self):
         schema = s.FlagSchema(many=True)
         query = s.FlagSchema.Meta.model.query
@@ -29,6 +27,8 @@ class Flags(Resource):
 
 
 class Flag(Resource):
+    method_decorators = [jwt_required]
+
     def delete(self, id):
         flag = s.FlagSchema.Meta.model.query.get_or_404(id)
         db.session.delete(flag)

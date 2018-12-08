@@ -19,8 +19,8 @@ class PBCPublicRecord(scrapy.Item):
     cfn = scrapy.Field()
     legal = scrapy.Field()
     book_type = scrapy.Field()
-    party1 = scrapy.Field()
-    party2 = scrapy.Field()
+    party1 = scrapy.Field()  # Deed=Deed Granter, Judgment=Plaintiff
+    party2 = scrapy.Field()  # Deed=Recipient, Judgment=Defendant,
     pages = scrapy.Field()
     image_uri = scrapy.Field()
     consideration = scrapy.Field()

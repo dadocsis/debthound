@@ -29,11 +29,12 @@ const Label = props => {
     const {options} = props;
     let deleteButtonStyle = "btn btn-secondary btn-sm float-right";
     let deleteButtonText = 'delete'
-    let style = 'd-flex';
+    let style = 'd-flex justify-content-between';
 
     if (options && options.deleteStyle === 'compact'){
         deleteButtonStyle = "btn btn-sm t-back p-0";
         deleteButtonText = (<i className="far fa-times-circle"></i>)
+        style = 'd-flex'
     }
 
     function deleteHandler(e) {
@@ -41,11 +42,19 @@ const Label = props => {
             props.deleteLabel(props.label.toJS())
         }
     }
-
-    return (<div className={style}>
+    if (options && options.deleteStyle === 'compact'){
+        return (<div className={style}>
         <span className={"badge badge-pill " + getColorClass(props.label.get('description'))}>{props.label.get('name')}
             <button type="button" className={deleteButtonStyle} onClick={deleteHandler}>{deleteButtonText}</button>
         </span>
+
+    </div>);
+    }
+
+    return (<div className={style}>
+        <span className={"badge badge-pill " + getColorClass(props.label.get('description'))}>{props.label.get('name')}
+        </span>
+        <button type="button" className={deleteButtonStyle} onClick={deleteHandler}>{deleteButtonText}</button>
 
     </div>);
 }
@@ -90,7 +99,8 @@ class MyMultiSelect extends React.Component {
             disabled,
             disableSearch,
             filterOptions,
-            overrideStrings
+            overrideStrings,
+            overrideOptions
         } = this.props;
         const {selected} = this.state;
 
@@ -108,17 +118,40 @@ class MyMultiSelect extends React.Component {
                 filterOptions={filterOptions}
                 overrideStrings={overrideStrings}
             />
+            { overrideOptions && overrideOptions.showSubmitChangeButton &&
             <button type="button" className="btn btn-primary float-right"
-                    onClick={this.handleApplyMultiSelect.bind(this)}>Filter</button>
+                    onClick={this.handleApplyMultiSelect.bind(this)}>Filter</button>}
         </div>
 
     }
 }
 
+const ordinal_suffix_of = (i) => {
+    let j = i % 10,
+        k = i % 100;
+    if (j == 1 && k != 11) {
+        return i + "st";
+    }
+    if (j == 2 && k != 12) {
+        return i + "nd";
+    }
+    if (j == 3 && k != 13) {
+        return i + "rd";
+    }
+    return i + "th";
+};
+
+
+const WEEKDAYS = ['mon', 'tues', 'wed', 'thurs', 'fri', 'sat', 'sun']
+
+const getDayOfWeek = (dayint) => WEEKDAYS[dayint];
 
 export {
     COLORS,
     getColorClass,
     MyMultiSelect,
-    Label
+    Label,
+    ordinal_suffix_of,
+    WEEKDAYS,
+    getDayOfWeek
 }

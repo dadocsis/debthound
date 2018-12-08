@@ -8,6 +8,10 @@ if (process != undefined){
 
 }
 
+function getAuthHeader() {
+    return 'Bearer ' + JSON.parse(localStorage.getItem("access_token"));
+}
+
 function getUrl(path, params={}){
     let url = new URL(origin + path);
     for (let k in params){
@@ -29,7 +33,8 @@ export const getEntities = (page, args, func, ehandle=defaultEhandle) => {
      fetch(myUrl, {
           headers : {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': getAuthHeader()
            }})
         .then(rsp => {
             if (!rsp.ok){
@@ -50,7 +55,8 @@ export const getDocumentsForLead = (id, func, ehandle=defaultEhandle) => {
     fetch(getUrl('/api/v1/entities/' + id + '/documents'), {
           headers : {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': getAuthHeader()
            }})
         .then(rsp => {
             if (!rsp.ok){
@@ -68,6 +74,7 @@ export const saveLabel = (label, func, ehandle=defaultEhandle) => {
         cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
+            'Authorization': getAuthHeader(),
             "Content-Type": "application/json; charset=utf-8",
             // "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -88,7 +95,8 @@ export const getLables = (page, func, ehandle=defaultEhandle) => {
     fetch(getUrl('/api/v1/flags'), {
           headers : {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': getAuthHeader()
           }})
         .then(rsp => {
             if (!rsp.ok){
@@ -107,7 +115,7 @@ export const deleteLabel = (id, func, ehandle=defaultEhandle) => {
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            // "Content-Type": "application/x-www-form-urlencoded",
+            'Authorization': getAuthHeader()
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
@@ -130,7 +138,7 @@ export const updateLeadLables = (data, func, ehandle=defaultEhandle) => {
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            // "Content-Type": "application/x-www-form-urlencoded",
+            'Authorization': getAuthHeader()
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
@@ -153,7 +161,7 @@ export const updateLead = (data, func, ehandle=defaultEhandle) => {
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            // "Content-Type": "application/x-www-form-urlencoded",
+            'Authorization': getAuthHeader()
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
@@ -176,11 +184,89 @@ export const loginUser = (data, func, ehandle=defaultEhandle) => {
         credentials: "same-origin", // include, same-origin, *omit
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            // "Content-Type": "application/x-www-form-urlencoded",
+            'Authorization': getAuthHeader()
         },
         redirect: "follow", // manual, *follow, error
         referrer: "no-referrer", // no-referrer, *client
         body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(rsp => {
+            if (!rsp.ok) {
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const getSchedules = (page, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/siteSchedules'), {
+          headers : {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': getAuthHeader()
+          }})
+        .then(rsp => {
+            if (!rsp.ok){
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const saveSchedule = (siteSchedule, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/siteSchedules'), {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            'Authorization': getAuthHeader()
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(siteSchedule), // body data type must match "Content-Type" header
+    })
+    .then(rsp => {
+        if (!rsp.ok) {
+            ehandle(rsp);
+            return;
+        }
+        rsp.json().then(json => func(json))
+    }, ehandle)
+};
+
+export const getSites = (func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/sites'), {
+          headers : {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': getAuthHeader()
+          }})
+        .then(rsp => {
+            if (!rsp.ok){
+                ehandle(rsp);
+                return;
+            }
+            rsp.json().then(json => func(json))
+        }, ehandle)
+};
+
+export const deleteSchedule= (id, func, ehandle=defaultEhandle) => {
+    fetch(getUrl('/api/v1/siteSchedules/' + id), {
+        method: "DELETE", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, same-origin, *omit
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            'Authorization': getAuthHeader()
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+
     })
     .then(rsp => {
             if (!rsp.ok) {

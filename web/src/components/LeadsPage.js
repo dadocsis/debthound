@@ -89,6 +89,7 @@ const LeadToolbar = (props) => {
                         <button className="dropdown-item" type="button">Cancel</button>
                              </form>
                     </div>
+
                 </div>
                 <div className="btn-group mr-2 d-flex flex-fill justify-content-center" role="group" >
 
@@ -104,7 +105,7 @@ const LeadToolbar = (props) => {
                             <form className="px-2">
                                 <div className="form-group">
                                     <label htmlFor="lead-filter" className="font-weight-bold">Lead Filter</label>
-                                    <MyMultiSelect options={labels} myApplyHandler={applyFilter} selected={selectedFiltersFromLabels}/>
+                                    <MyMultiSelect overrideOptions={{showSubmitChangeButton: true}} options={labels} myApplyHandler={applyFilter} selected={selectedFiltersFromLabels}/>
 
                                 </div>
                             </form>
@@ -118,52 +119,76 @@ const LeadToolbar = (props) => {
                                 <i className="fas fa-angle-down"></i>
                             </button>
                     </div>
+                    <span className="float-left">{props.leads.size}</span>
                 </div>
 
             </div>
-
-
     </div>)};
 
 const LeadDocs = (props) => {
     let staged = {};
     props.docs.forEach((d, idx) =>{
-        if (!staged[d.getIn(['doc_type','id'])]) {
-            staged[d.getIn(['doc_type','id'])] = {docype: d.get('doc_type'), docs: []};
+        if (!staged[d.getIn(['site','id'])]) {
+            let dtg = {};
+            dtg[d.getIn(['doc_type', 'id'])] = {
+                doc_type: d.get('doc_type'),
+                docs: [d]
+            };
+            staged[d.getIn(['site','id'])] = {
+                site: d.get('site'), doc_type_grouped: dtg
+            }
+        } else if (!staged[d.getIn(['site','id'])]['doc_type_grouped'][d.getIn(['doc_type', 'id'])]){
+            let dtg = staged[d.getIn(['site','id'])]['doc_type_grouped'];
+            dtg[d.getIn(['doc_type', 'id'])] = {
+                doc_type: d.get('doc_type'),
+                docs: [d]
+            };
+        } else {
+            let dtg = staged[d.getIn(['site','id'])]['doc_type_grouped'][d.getIn(['doc_type', 'id'])];
+            dtg.docs.push(d)
         }
-        let docgroup = staged[d.getIn(['doc_type','id'])];
-        docgroup.docs.push(d)
     });
     let markup = [];
     for (let k in staged){
         let t = (
-        <table className="table table-sm" key={k}>
-            <thead>
-            <caption>{staged[k].docype.get('description')}</caption>
-            <tr>
-                <th scope="col">date</th>
-                <th scope="col">party1</th>
-                <th scope="col">party2</th>
-                <th scope="col">document image</th>
-                <th scope="col">cross name</th>
-                <th scope="col">legal</th>
-                <th scope="col">cfn</th>
-            </tr>
-            </thead>
-            <tbody>
-            {staged[k].docs.map((d =>
-                <tr key={d.get('id')}>
-                    <td className='text-nowrap'>{d.get('date')}</td>
-                    <td>{d.get('party1')}</td>
-                    <td>{d.get('party2')}</td>
-                    <td className='text-truncate d-inline-block' style={{maxWidth: '150px'}}><a target='_blank' href={d.get('image_uri')}>{d.get('image_uri')} </a> </td>
-                    <td>{d.get('cross_name')}</td>
-                    <td>{d.get('legal')}</td>
-                    <td>{d.get('cfn')}</td>
-                </tr>
-            ))}
-            </tbody>
-        </table>
+         <div key={k} className="rounded border border-light bg-light p-2">
+             <p className="text-center">
+                <h5 className="m-2">{staged[k].site.get('base_url')}</h5>
+             </p>
+             {Object.keys(staged[k].doc_type_grouped).map(dtg_k => {
+                 let dtg = staged[k].doc_type_grouped[dtg_k];
+                 return (
+                     <table className="table table-sm" key={dtg_k}>
+                        <thead>
+                        <caption>{dtg.doc_type.get('description')}</caption>
+                        <tr>
+                            <th scope="col">date</th>
+                            <th scope="col">party1</th>
+                            <th scope="col">party2</th>
+                            <th scope="col">document image</th>
+                            <th scope="col">cross name</th>
+                            <th scope="col">legal</th>
+                            <th scope="col">cfn</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {dtg.docs.map((d =>
+                            <tr key={d.get('id')}>
+                                <td className='text-nowrap'>{d.get('date')}</td>
+                                <td>{d.get('party1')}</td>
+                                <td>{d.get('party2')}</td>
+                                <td className='text-truncate d-inline-block' style={{maxWidth: '150px'}}><a target='_blank' href={d.get('image_uri')}>{d.get('image_uri')} </a> </td>
+                                <td>{d.get('cross_name')}</td>
+                                <td>{d.get('legal')}</td>
+                                <td>{d.get('cfn')}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                 );
+             })
+         }
+         </div>
         );
         markup.push(t);
     }

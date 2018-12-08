@@ -19,7 +19,17 @@ export const ActionTypes = {
     LEAD_UPDATED: 'LEAD_UPDATED',
     USER_LOGGED_IN: 'USER_LOGGED_IN',
     USER_LOGGING_IN: 'USER_LOGGING_IN',
-    USER_LOGGED_OUT: 'USER_LOGGED_OUT'
+    USER_LOGGED_OUT: 'USER_LOGGED_OUT',
+    CREATE_DRAFT_SCHEDULE: 'CREATE_DRAFT_SCHEDULE',
+    DRAFT_SCHEDULE_CHANGE: 'DRAFT_SCHEDULE_CHANGE',
+    CREATE_SCHEDULE: 'CREATE_SCHEDULE',
+    SCHEDULE_CREATED: 'SCHEDULE_CREATED',
+    CANCEL_SCHEDULE: 'CANCEL_DRAFTSCHEDULE',
+    GET_SCHEDULES: 'GET_SCHEDULES',
+    RCV_SCHEDULES: 'RCV_SCHEDULES',
+    SCHEDULE_DELETED: 'SCHEDULE_DELETED',
+    RCV_SITES: 'RCV_SITES',
+
 };
 
  const Actions = {
@@ -124,7 +134,62 @@ export const ActionTypes = {
         dispatcher.dispatch({
             type: ActionTypes.USER_LOGGED_OUT
         })
-     }
+     },
+     saveDraftSchedule() {
+        dispatcher.dispatch({
+            type: ActionTypes.CREATE_SCHEDULE,
+        })
+    },
+     cancelDraftSchedule() {
+        dispatcher.dispatch({
+            type: ActionTypes.CANCEL_SCHEDULE,
+
+        })
+    },
+    getSchedules() {
+        dispatcher.dispatch({
+            type: ActionTypes.GET_SCHEDULES
+        })
+    },
+    rcvSchedules(rsp, page) {
+        dispatcher.dispatch({
+            type: ActionTypes.RCV_SCHEDULES,
+            rsp: rsp,
+            currentPage: page
+        })
+    },
+    createDraftSchedule(sites) {
+        dispatcher.dispatch({
+            type: ActionTypes.CREATE_DRAFT_SCHEDULE,
+            site: sites[0].id
+        })
+    },
+    draftScheduleChange(fieldName, value) {
+        let data = {};
+        data[fieldName] = value;
+        dispatcher.dispatch({
+            type: ActionTypes.DRAFT_SCHEDULE_CHANGE,
+            data
+        })
+    },
+    scheduleCreated(rsp) {
+        dispatcher.dispatch({
+            type: ActionTypes.SCHEDULE_CREATED,
+            rsp: rsp
+        })
+    },
+    rcvSites(rsp) {
+        dispatcher.dispatch({
+            type: ActionTypes.RCV_SITES,
+            rsp: rsp
+        });
+    },
+     scheduleDeleted(id) {
+        dispatcher.dispatch({
+            type: ActionTypes.SCHEDULE_DELETED,
+            id
+        })
+    },
 };
 
  export default Actions;

@@ -10,3 +10,5 @@ passlib
 tox
 appdirs==1.4.3
 requests
+scrapyd==1.2.0
+schedule-0.5.0

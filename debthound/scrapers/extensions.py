@@ -5,6 +5,8 @@ from data_api.models import SessionContext, SiteScrapeLog, Site, SiteScrapeLogDe
 
 from scrapy.exceptions import NotConfigured
 from scrapy import signals
+from scrapy import log
+from scrapy import logformatter
 
 
 class LogToDatabase(LogStats):
@@ -57,6 +59,7 @@ class LogToDatabase(LogStats):
             s.add(log)
             s.commit()
             self.session_id = log.id
+            spider.log_id = log.id
 
     def close_log(self, spider):
         if self.session_id:
@@ -64,6 +67,9 @@ class LogToDatabase(LogStats):
                 log = s.query(SiteScrapeLog).filter_by(id=self.session_id).one()
                 log.end_datetime = datetime.utcnow()
                 log.error = self.stats.get_value('log_count/ERROR', '0')
+                site = s.query(Site).filter_by(base_url=spider.id).one()
+                if site.last_scrape_datetime and site.last_scrape_datetime.date() < spider._max_date:
+                    site.last_scrape_datetime = spider._max_date
                 s.commit()
 
     def log_error(self, failure, response, spider):
@@ -75,3 +81,10 @@ class LogToDatabase(LogStats):
                 )
                 s.add(detail)
                 s.commit()
+
+
+class MyLogFormatter(logformatter.LogFormatter):
+    def dropped(self, item, exception, response, spider):
+        original = super(MyLogFormatter, self).dropped(item, exception, response, spider)
+        original['level'] = log.DEBUG
+        return original

@@ -15,3 +15,12 @@ set http_proxy=http://localhost:17560
 ##flask setup
 - copy secrets file
 - run web_api init
+
+##deploy spiders to scrapyd
+- pip install scrapyd-client
+- if lower env must set ENV=local (if local) need to do this before running scrapy d
+- cd into root dir (where scrapyd.cfg lives)
+- run scrapyd 
+- scrapyd-deploy default -p debthound
+
+## Prod (Dont for get to set Prod settings)

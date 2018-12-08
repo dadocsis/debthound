@@ -91,3 +91,16 @@ ITEM_PIPELINES = {
 FEED_EXPORTERS = {
     'csv': 'scrapers.exporters.MyCsvItemExporter'
 }
+
+from configparser import ConfigParser
+import os
+
+file = os.path.abspath(os.path.join(os.path.join(__file__, '../..'), 'secrets.ini'))
+secrets = ConfigParser()
+secrets.read(file)
+ENV = os.environ.get('ENV', 'prod')
+
+MYSQL_URL = secrets.get(ENV, 'db_uri')
+WEB_API_URL = 'http://127.0.0.1/api/v1/' if ENV == 'prod' else 'http://127.0.0.1:5000/api/v1/'
+
+LOG_FORMATTER = 'scrapers.extensions.MyLogFormatter'

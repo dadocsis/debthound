@@ -9,11 +9,13 @@ import SelectedLeadStore from './stores/SelectedLeadStore'
 import LablesStore from './stores/LabelsStore'
 import {Container} from 'flux/utils';
 import './App.css';
-import {fetchLeads, getDocsForLead, fetchLables, deleteLabel,
-        batchUpdateLeadLabels, updateLead, userLogin} from './data/DataManager';
+import {fetchLeads, getDocsForLead, fetchLables, deleteLabel, deleteSchedule,
+        batchUpdateLeadLabels, updateLead, userLogin, fetchSchedules} from './data/DataManager';
 import Actions from './Actions'
 import DraftLabelStore from "./stores/DraftLabelStore";
 import AuthenticatedUserStore from './stores/AuthenticatedUserStore'
+import SchedulesStore from './stores/SchedulesStore'
+import DraftScheduleStore from './stores/DraftScheduleStore'
 
 const Header = (props) => {
     let isAuthed = !!props.isAuthed;
@@ -38,10 +40,7 @@ const Header = (props) => {
                         </li>
 
                     </ul>
-                    <form className="form-inline my-2 my-lg-0">
-                        <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"/>
-                            <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                    </form>
+
                 </div>
             </nav>)
 };
@@ -108,7 +107,9 @@ function getStores() {
     SelectedLeadStore,
     LablesStore,
     DraftLabelStore,
-    AuthenticatedUserStore
+    AuthenticatedUserStore,
+    SchedulesStore,
+    DraftScheduleStore
   ];
 }
 
@@ -120,7 +121,7 @@ function getState() {
     selectedLead: SelectedLeadStore.getState(),
     fetchLeads,
     getDocsForLead: getDocsForLead,
-    handlePageClick: (page) => fetchLeads(page),
+    handlePageClick: (page, args) => fetchLeads(page, args),
     labels: LablesStore.getState(),
     createDraftLabel: Actions.createDraftLabel,
     draftLabel: DraftLabelStore.getState(),
@@ -134,7 +135,15 @@ function getState() {
     updateLead,
     authenticatedUser: AuthenticatedUserStore.getState(),
     userLogin,
-    userLogout: Actions.userLoggedOut
+    userLogout: Actions.userLoggedOut,
+    createDraftSchedule: Actions.createDraftSchedule,
+    saveDraftSchedule: Actions.saveDraftSchedule,
+    cancelDraftSchedule: Actions.cancelDraftSchedule,
+    fetchSchedules,
+    schedules: SchedulesStore.getState(),
+    draftSchedule: DraftScheduleStore.getState(),
+    draftScheduleChange: Actions.draftScheduleChange,
+    deleteSchedule
   };
 }
 

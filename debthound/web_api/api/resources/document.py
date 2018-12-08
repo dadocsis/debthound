@@ -1,6 +1,5 @@
-from flask import request, current_app
+from flask import request
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
@@ -9,9 +8,11 @@ from web_api.extensions import db
 from web_api.api import schemas as s
 
 from web_api.commons.pagination import paginate
+from web_api.auth.helpers import jwt_or_local_only as jwt_required
 
 
 class DocumentResource(Resource):
+    method_decorators = [jwt_required]
 
     def get(self, id):
         doc = db.session.query(m.Document).get(id)
@@ -20,6 +21,8 @@ class DocumentResource(Resource):
 
 
 class DocumentByCFNResource(Resource):
+    method_decorators = [jwt_required]
+
     def get(self, cfn):
         try:
             doc = db.session.query(m.Document).filter_by(cfn=cfn).one()
@@ -30,6 +33,8 @@ class DocumentByCFNResource(Resource):
 
 
 class DocumentsCollection(Resource):
+    method_decorators = [jwt_required]
+
     def post(self):
         schema = s.DocumentSchema()
         doc, errors = schema.load(request.json)
@@ -43,6 +48,8 @@ class DocumentsCollection(Resource):
 
 
 class DocumentsByEntityId(Resource):
+    method_decorators = [jwt_required]
+
     def get(self, id):
         edocs = db.session.query(m.Entity).options(
             joinedload(m.Entity.document_facts).joinedload(m.DocumentFact.document).
@@ -54,6 +61,8 @@ class DocumentsByEntityId(Resource):
 
 
 class EntityCollection(Resource):
+    method_decorators = [jwt_required]
+
     def get(self):
         filters = request.args.getlist('labels')
         schema = s.EntitySchema(many=True)
@@ -66,6 +75,7 @@ class EntityCollection(Resource):
 
 
 class EntityBatchUpdate(Resource):
+    method_decorators = [jwt_required]
 
     def post(self):
         schema = s.EntityBatchUpdateSchema(many=True)
@@ -88,6 +98,8 @@ class EntityBatchUpdate(Resource):
 
 
 class Entity(Resource):
+    method_decorators = [jwt_required]
+
     def patch(self, id):
         schema = s.EntitySchema()
         ent, error = schema.load(request.json, partial=True)
