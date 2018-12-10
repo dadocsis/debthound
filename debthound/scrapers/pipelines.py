@@ -71,8 +71,8 @@ class ScrapersPipeline(object):
             cfn=item['cfn'], consideration=float(item['consideration']),
             cross_name=item['cross_name'], date=datetime.strptime(item['date'], '%m/%d/%Y').date(),
             image_uri=item['image_uri'], legal=legal,
-            page=item['page'], party1=",".join(item['party1']),
-            party2=",".join(item['party2']), doctype_id=doctype['id'],
+            page=item['page'], party1=item['party1'],
+            party2=item['party2'], doctype_id=doctype['id'],
             site_id=self.site_id, name=item['name'], info=item['info']
         )
         return self.make_save_request(document, spider)

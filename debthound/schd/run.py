@@ -35,33 +35,34 @@ def job(api_address: str):
     for sched in schedules:
         last_poll_date = sched['site']['last_poll_datetime']
         if sched['exact']:
-            date_to_run = datetime.datetime(year=current_dt.year, month=current_dt.month,
+            date_time_to_run = datetime.datetime(year=current_dt.year, month=current_dt.month,
                                              day=sched['day'], hour=sched['time'].hour,
                                              minute=sched['time'].minute, second=sched['time'].second)
         else:
             first_day_of_week = current_dt - datetime.timedelta(days=current_dt.weekday())
             day_to_run = first_day_of_week + datetime.timedelta(days=sched['day'] -1)
-            date_to_run = datetime.datetime(year=current_dt.year,
+            date_time_to_run = datetime.datetime(year=current_dt.year,
                                             month=current_dt.month,
                                             day=day_to_run.day,
                                             hour=sched['time'].hour,
                                             minute=sched['time'].minute,
                                             second=sched['time'].second)
-        if sched['end'] >= date_to_run.date() >= sched['start']:
+        if sched['end'] >= date_time_to_run.date() >= sched['start']:
             run_sched = {
                 'project': 'debthound',
                 'spider': sched['site']['spider_name'],
                 'params': {
                     'start_date': pytz.utc.localize(sched['site']['last_scrape_datetime']).astimezone(EST).strftime(DATE_FMT),
-                    'end_date': pytz.utc.localize(date_to_run).astimezone(EST).strftime(DATE_FMT)
+                    'end_date': pytz.utc.localize(date_time_to_run).astimezone(EST).strftime(DATE_FMT)
                 }
             }
 
-            if last_poll_date < date_to_run and date_to_run.day == current_dt.day:
+            if last_poll_date < date_time_to_run and date_time_to_run.day == current_dt.day:
                 if sched['time'] <= current_dt.time():
                     run_now.append(run_sched)
             # if the daemon wasnt running on the day it was scheduled
-            elif current_dt.day > date_to_run.day > last_poll_date.day > sched['site']['last_scrape_datetime'].day:
+            elif current_dt.day > date_time_to_run.day \
+                    and date_time_to_run.date() > last_poll_date.date() > sched['site']['last_scrape_datetime'].date():
                 run_sched['params']['end_date'] = pytz.utc.localize(last_poll_date).astimezone(EST).strftime(DATE_FMT)
                 run_now.append(run_sched)
 

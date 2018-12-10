@@ -29,6 +29,8 @@ export const ActionTypes = {
     RCV_SCHEDULES: 'RCV_SCHEDULES',
     SCHEDULE_DELETED: 'SCHEDULE_DELETED',
     RCV_SITES: 'RCV_SITES',
+    LEAD_SEARCH: 'LEAD_SEARCH',
+    SELECT_ALL_LEADS: 'SELECT_ALL_LEADS'
 
 };
 
@@ -38,11 +40,12 @@ export const ActionTypes = {
             type: ActionTypes.GET_LEADS
         });
     },
-    rcvEntities(rsp, page){
+    rcvEntities(rsp, page, searchStr){
         dispatcher.dispatch({
             type: ActionTypes.RCV_LEADS,
             response: rsp,
-            currentPage: page
+            currentPage: page,
+            searchString: searchStr
         });
     },
     getDocsForLead(id){
@@ -190,6 +193,24 @@ export const ActionTypes = {
             id
         })
     },
+    searchLeads(searchStr) {
+        dispatcher.dispatch({
+            type: ActionTypes.LEAD_SEARCH,
+            searchString: searchStr
+        })
+    },
+    userApplyLables(labels) {
+        dispatcher.dispatch({
+            type: ActionTypes.APPLY_LABELS,
+            labels: labels
+        })
+    },
+    selectAllLeads(leads) {
+        dispatcher.dispatch({
+            type: ActionTypes.SELECT_ALL_LEADS,
+            leads
+        })
+    }
 };
 
  export default Actions;
