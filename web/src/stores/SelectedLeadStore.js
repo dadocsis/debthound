@@ -35,6 +35,13 @@ class SelectedLeadStore extends ReduceStore{
                     }
                 }
                 return state.merge(Map({selectedLeads: newSelected}));
+            case ActionTypes.SELECT_ALL_LEADS:
+                if (state.get('selectedLeads').length > 0) {
+                    return state.set('selectedLeads', [])
+                }
+                return state.set('selectedLeads', action.leads);
+
+
             default:
                 return state;
         }

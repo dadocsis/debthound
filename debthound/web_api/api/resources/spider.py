@@ -83,3 +83,4 @@ class RunSiteEtl(Resource):
         if errors:
             return errors, 422
         db.session.execute('call document_etl({0})'.format(site.id))
+        db.session.commit()

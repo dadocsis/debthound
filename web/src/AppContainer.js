@@ -143,7 +143,10 @@ function getState() {
     schedules: SchedulesStore.getState(),
     draftSchedule: DraftScheduleStore.getState(),
     draftScheduleChange: Actions.draftScheduleChange,
-    deleteSchedule
+    deleteSchedule,
+    searchLeads: Actions.searchLeads,
+    userApplyLables: Actions.userApplyLables,
+    selectAllLeads: Actions.selectAllLeads
   };
 }
 

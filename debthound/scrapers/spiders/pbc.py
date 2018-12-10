@@ -197,13 +197,17 @@ class PBC(MyBaseSpider):
             consideration = response.xpath('(//table)[5]/tr[7]/td[2]/text()').extract_first()
             consideration = float(re.sub(r'[\$,]', '', consideration))
             party1 = response.xpath('(//table)[5]/tr/td[text()="Party 1:"]/following-sibling::td//dt/text()').extract()
+            party1 = [re.sub(r'[\r\n\t]', '', s).strip() for s in party1]
+            party1 = ','.join(party1)
             party2 = response.xpath('(//table)[5]/tr/td[text()="Party 2:"]/following-sibling::td//dt/text()').extract()
+            party2 = [re.sub(r'[\r\n\t]', '', s).strip() for s in party2]
+            party2 = ','.join(party2)
             book_type = response.xpath('(//table)[5]/tr/td[text()="Book Type:"]/following-sibling::td/text()').extract_first()
             item = response.meta['item']
             item['pages'] = pages
             item['consideration'] = consideration
-            item['party1'] = [re.sub(r'[\r\n\t]', '', s).strip() for s in party1]
-            item['party2'] = [re.sub(r'[\r\n\t]', '', s).strip() for s in party2]
+            item['party1'] = party1
+            item['party2'] = party2
             item['image_uri'] = url
             item['book_type'] = book_type
             yield item

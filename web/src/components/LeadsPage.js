@@ -37,10 +37,10 @@ const LeadToolbar = (props) => {
         }
     }
 
-    function applyFilter(selection) {
+    function applyLables(selection) {
         let args = selection.map((s) => (s.name));
+        props.userApplyLables(selection);
         props.fetchLeads(1, {labels: args});
-        localStorage.setItem('selectedFilters', JSON.stringify(selection))
     }
 
     function applyLabelAssignment(e) {
@@ -53,9 +53,23 @@ const LeadToolbar = (props) => {
         }
         if (labels.length) {
             props.updateLeadLabels(labels, leads);
-            let chkboxes = $(e.target).find('input:checkbox:checked')
+            let chkboxes = $(e.target).find('input:checkbox:checked');
             chkboxes.prop( "checked", false )
         }
+    }
+    
+    function searchLeadChange(e) {
+        props.searchLeads(e.target.value);
+    }
+
+    function applySearch(e) {
+        let args = {searchString: props.searchStr};
+
+        if (props.selectedLabels && props.selectedLabels.length > 0){
+            args.labels = props.selectedLabels.map((s) => (s.name));
+        }
+
+        props.fetchLeads(1, {...args})
     }
 
     return(
@@ -63,7 +77,7 @@ const LeadToolbar = (props) => {
 
             <div className="btn-toolbar mb-1" role="toolbar" aria-label="Lead Toolbar">
                 <div className="btn-group mr-2" role="group">
-                    <button type="button" className="btn btn-sm">
+                    <button type="button" className="btn btn-sm" onClick={e => props.selectAllLeads(props.leads.toJS())}>
                         <i className="far fa-check-square"></i>
                     </button>
                 </div>
@@ -93,19 +107,19 @@ const LeadToolbar = (props) => {
                 </div>
                 <div className="btn-group mr-2 d-flex flex-fill justify-content-center" role="group" >
 
-                   <button onClick={toggle}  className="btn btn-sm" data-toggle="collapse" data-target="#filterMenu"  aria-controls="filterMenu" aria-expanded="false">
+                   <button onClick={applySearch}  className="btn btn-sm" data-toggle="collapse" data-target="#filterMenu"  aria-controls="filterMenu" aria-expanded="false">
                        <i className="fas fa-search"></i>
                    </button>
 
                     <div className="w-50">
 
-                       <input style={{width: "100%"}} ref={rInput} type='text'/>
+                       <input style={{width: "100%"}} ref={rInput} type='text' onChange={searchLeadChange} value={props.searchStr}/>
 
                         <div ref={menu} className="border FilterMenu collapse">
                             <form className="px-2">
                                 <div className="form-group">
                                     <label htmlFor="lead-filter" className="font-weight-bold">Lead Filter</label>
-                                    <MyMultiSelect overrideOptions={{showSubmitChangeButton: true}} options={labels} myApplyHandler={applyFilter} selected={selectedFiltersFromLabels}/>
+                                    <MyMultiSelect overrideOptions={{showSubmitChangeButton: true}} options={labels} myApplyHandler={applyLables} selected={selectedFiltersFromLabels}/>
 
                                 </div>
                             </form>
@@ -119,7 +133,7 @@ const LeadToolbar = (props) => {
                                 <i className="fas fa-angle-down"></i>
                             </button>
                     </div>
-                    <span className="float-left">{props.leads.size}</span>
+                    <span className="float-left">{props.total}</span>
                 </div>
 
             </div>
@@ -196,12 +210,13 @@ const LeadDocs = (props) => {
 };
 
 const Lead = (props) => {
-    let selectedLead = props.lead.get('id') === props.selectedLead.get('id');
-    let isLoading = selectedLead && props.selectedLead.get('isLoading') === true;
+    let expandedLead = props.lead.get('id') === props.selectedLead.get('id');
+    let isLoading = expandedLead && props.selectedLead.get('isLoading') === true;
     let flags = props.lead.get('flags');
+    let selected = props.selectedLead.get("selectedLeads").find(l => l.id === props.lead.get('id'));
 
     function toggleDocs(id){
-        if (selectedLead){
+        if (expandedLead){
             props.getDocsForLead(-1)
         } else {
             props.getDocsForLead(id)
@@ -216,17 +231,18 @@ const Lead = (props) => {
 
     let _li = (<li className="list-group-item list-group-item-action" id={props.lead.get('id')}>
         <div className={'d-inline-flex'}>
-                <input type='checkbox' className='mr-2' onChange={(e) => props.toggleLead(props.lead.toJS())}/>
+                <input type='checkbox' className='mr-2' onChange={(e) => props.toggleLead(props.lead.toJS())}
+                checked={selected && true}/>
                 <span className="font-weight-normal mr-2" onClick={(e) => toggleDocs(props.lead.get('id'))} style={{cursor: 'crosshair'}}>
                     {props.lead.get('name')}</span>
         { flags.size > 0 && flags.map((f, idx) => (<Label key={idx} label={f} deleteLabel={deleteLabel} options={{deleteStyle: 'compact'}}/>))}
 
                 <span className="badge badge-primary badge-pill d-table">{props.lead.get('document_facts').size}</span>
              </div>
-                { !isLoading && selectedLead &&
+                { !isLoading && expandedLead &&
                     <LeadDocs docs={props.selectedLead.get('docs')} />
                 }
-        { isLoading && selectedLead &&
+        { isLoading && expandedLead &&
             <Loader
                 type="Puff"
                 color="#00BFFF"
@@ -243,6 +259,7 @@ class Leads extends React.Component {
         this.resizeCallback = null;
         this.registerResizeCallBack = this.registerResizeCallBack.bind(this);
         this.handleResize = this.handleResize.bind(this);
+        this.handlePager = this.handlePager.bind(this)
     }
     render() {
         if (this.props.entities.get('isLoading')){
@@ -254,25 +271,28 @@ class Leads extends React.Component {
         }
         return (
             <div>
-                <LeadToolbar registerResizeCallBack={this.registerResizeCallBack} leads={this.props.entities.get('results')}
+                <LeadToolbar registerResizeCallBack={this.registerResizeCallBack} leads={this.props.entities.get('results')} searchStr={this.props.entities.get('searchString')}
                              labels={this.props.labels.get('results')} fetchLables={this.props.fetchLables} fetchLeads={this.props.fetchLeads}
-                             updateLeadLabels={this.props.updateLeadLabels} selectedLeads={this.props.selectedLead.get('selectedLeads')}/>
+                             updateLeadLabels={this.props.updateLeadLabels} selectedLeads={this.props.selectedLead.get('selectedLeads')} 
+                             searchLeads={this.props.searchLeads} userApplyLables={this.props.userApplyLables} selectedLabels={this.props.authenticatedUser.get("selectedFilters")}
+                             selectAllLeads={this.props.selectAllLeads} total={this.props.entities.get('total')}
+                />
                 <ul className="list-group">
                     {
-                        this.props.entities.get('results').map((lead, i)=>
-                            <Lead key={i} lead={lead} {...this.props} handleclick={this.handleclick}/>)
+                        this.props.entities.get('results').map((lead, i)=> {
+                            return (<Lead key={i} lead={lead} {...this.props} handleclick={this.handleclick}/>)
+                        })
                     }
                 </ul>
                 {this.props.entities.get('pages') > 1 &&
                 <Pager currentPage={this.props.entities.get('currentPage')}
                        totalPages={this.props.entities.get('pages')}
-                       handlePageClick={this.props.handlePageClick} />}
+                       handlePageClick={this.handlePager} />}
             </div>
         )
     }
     componentDidMount() {
-      let filters = localStorage.getItem("selectedFilters");
-      filters = filters ? JSON.parse(filters) : [];
+      let filters = this.props.authenticatedUser.get('selectedFilters');
 
       if (filters.length){
           const args = filters.map((s) => (s.name));
@@ -296,6 +316,27 @@ class Leads extends React.Component {
 
     registerResizeCallBack(f){
         this.resizeCallback = f
+    }
+
+    handlePager(page) {
+        let args = {};
+        let selectedLables = this.props.authenticatedUser.get("selectedFilters");
+
+        if (selectedLables && selectedLables.length > 0){
+            args.labels = selectedLables.map((s) => (s.name));
+        }
+
+        let searchStr = this.props.entities.get("hasSearchStringFilter") && this.props.entities.get("searchString");
+        if (searchStr){
+            args.searchString = searchStr;
+        }
+
+        if (Object.entries(args).length > 0) {
+            this.props.handlePageClick(page, {...args})
+        }
+        else {
+            this.props.handlePageClick(page)
+        }
     }
 
 }

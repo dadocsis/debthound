@@ -4,7 +4,7 @@ import {getEntities, getDocumentsForLead, saveLabel, getLables, deleteLabel as _
 
 export const fetchLeads = (page=1, args={}) => {
     Actions.getEntities();
-    getEntities(page, args, (rsp) => Actions.rcvEntities(rsp, page))
+    getEntities(page, args, (rsp) => Actions.rcvEntities(rsp, page, args.searchString))
 };
 
 export const getDocsForLead = (l) => {

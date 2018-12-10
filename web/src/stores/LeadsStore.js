@@ -9,7 +9,7 @@ class LeadsStore extends ReduceStore{
     }
 
     getInitialState() {
-        return Immutable.Map({results: Immutable.List()});
+        return Immutable.Map({results: Immutable.List(), searchString: ''});
     }
 
     reduce(state, action) {
@@ -19,13 +19,17 @@ class LeadsStore extends ReduceStore{
 
             case ActionTypes.RCV_LEADS:
                 return state.merge(Immutable.fromJS(action.response)).set('isLoading', false)
-                    .set('currentPage', action.currentPage);
+                    .set('currentPage', action.currentPage).set("hasSearchStringFilter", action.searchString && true);
 
             case ActionTypes.LEAD_UPDATED:
                 let leads = state.get("results").toJS();
                 let thisLeadIdx = leads.findIndex(l => l.id === action.lead.id);
                 leads[thisLeadIdx] = action.lead;
                 return state.set("results", Immutable.fromJS(leads));
+
+            case ActionTypes.LEAD_SEARCH:
+                console.log(action.searchString);
+                return state.set("searchString", action.searchString);
 
           default:
             return state;

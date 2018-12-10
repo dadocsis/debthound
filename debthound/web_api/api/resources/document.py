@@ -51,10 +51,21 @@ class DocumentsByEntityId(Resource):
     method_decorators = [jwt_required]
 
     def get(self, id):
-        edocs = db.session.query(m.Entity).options(
-            joinedload(m.Entity.document_facts).joinedload(m.DocumentFact.document).
-            joinedload(m.Document.doc_type).joinedload('sites')).options(
-            joinedload(m.Entity.document_facts).joinedload(m.DocumentFact.document).joinedload(m.Document.site)).get(id)
+        edocs = db.session.query(m.Entity).\
+            options(
+                joinedload(m.Entity.document_facts).
+                joinedload(m.DocumentFact.document).
+                joinedload(m.Document.doc_type).
+                joinedload('sites')).\
+            options(
+                joinedload(m.Entity.document_facts).
+                joinedload(m.DocumentFact.document).
+                joinedload(m.Document.site)).\
+            options(
+                joinedload(m.Entity.document_facts).
+                joinedload(m.DocumentFact.document).
+                joinedload(m.Document.flags)). \
+            get(id)
         docs = [d.document for d in edocs.document_facts]
         schema = s.DocumentSchema(many=True)
         return schema.dump(docs).data
@@ -65,8 +76,11 @@ class EntityCollection(Resource):
 
     def get(self):
         filters = request.args.getlist('labels')
+        searchStr = request.args.get('searchString')
         schema = s.EntitySchema(many=True)
         query = db.session.query(m.Entity)
+        if searchStr:
+            query = query.filter(m.Entity.name.like(F'%{searchStr}%'))
         if filters:
             query = query.join(m.Entity.flags).filter(m.EntityFlag.name.in_(filters))
 

@@ -13,11 +13,13 @@ class AuthenticatedUserStore extends ReduceStore{
         const refresh_token = localStorage.getItem("refresh_token") ? JSON.parse(localStorage.getItem("refresh_token")) : null;
         const userName = localStorage.getItem("username") ? JSON.parse(localStorage.getItem("username")) : null;
         const userId = localStorage.getItem("userid") ? JSON.parse(localStorage.getItem("userid")) : null;
+        const selectedFilters = localStorage.getItem("selectedFilters") ? JSON.parse(localStorage.getItem("selectedFilters")) : null;
         return Immutable.Map({
             accessToken: access_token,
             refreshToken: refresh_token,
             username: userName,
-            userid: userId
+            userid: userId,
+            selectedFilters: selectedFilters
         });
     }
 
@@ -41,6 +43,9 @@ class AuthenticatedUserStore extends ReduceStore{
                 localStorage.removeItem('username');
                 localStorage.removeItem('userid');
                 return this.getInitialState();
+            case ActionTypes.APPLY_LABELS:
+                localStorage.setItem('selectedFilters', JSON.stringify(action.labels));
+                return state.set('selectedFilters', action.labels);
 
           default:
             return state;

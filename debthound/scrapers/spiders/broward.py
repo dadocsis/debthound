@@ -173,24 +173,28 @@ class Broward(MyBaseSpider):
 
                 for d in databag:
                     rdate = r_date_ex.match(d['RecordDate']).group(1)
-                    item = PBCPublicRecord(
-                        party1=d['DirectName'].replace(',', ' '),
-                        party2=d['IndirectName'].replace(',', ' '),
-                        name=d['CompressedDirectName'],
-                        cross_name=d['CompressedIndirectName'],
-                        date=datetime.fromtimestamp(int(rdate[:10])).date().strftime('%m/%d/%Y'),
-                        type_=doctype_maps[d['DocTypeDescription']],
-                        book=d['BookPage'].split('/')[0],
-                        book_type=d['BookType'],
-                        page=d['BookPage'].split('/')[1],
-                        pages='',
-                        cfn=d['InstrumentNumber'],
-                        legal=d['DocLegalDescription'],
-                        info=info,
-                        image_uri='https://officialrecords.broward.org/AcclaimWeb/Image/DocumentPdfAllPages/' + str(d['TransactionItemId']),
-                        consideration=d['Consideration']
-                    )
-                    yield item
+                    try:
+                        item = PBCPublicRecord(
+                            party1=d['DirectName'].replace(',', ' '),
+                            party2=d['IndirectName'].replace(',', ' '),
+                            name=d['CompressedDirectName'],
+                            cross_name=d['CompressedIndirectName'],
+                            date=datetime.fromtimestamp(int(rdate[:10])).date().strftime('%m/%d/%Y'),
+                            type_=doctype_maps[d['DocTypeDescription']],
+                            book=d['BookPage'].split('/')[0] if len(d['BookPage'].split('/')) > 1 else '',
+                            book_type=d['BookType'],
+                            page=d['BookPage'].split('/')[1] if len(d['BookPage'].split('/')) > 1 else '',
+                            pages='',
+                            cfn=d['InstrumentNumber'],
+                            legal=d['DocLegalDescription'],
+                            info=info,
+                            image_uri='https://officialrecords.broward.org/AcclaimWeb/Image/DocumentPdfAllPages/' + str(d['TransactionItemId']),
+                            consideration=d['Consideration']
+                        )
+                        yield item
+                    except Exception as ex:
+                        logging.getLogger().error("error creating item: {0}".format(d))
+                        continue
             # go to next date range search
             from_date = self._increment_days(to_date, 1)
             to_date = from_date + self._days_increment
