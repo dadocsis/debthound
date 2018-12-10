@@ -104,3 +104,4 @@ ENV/
 .idea/
 debthound/.flaskenv
 debthound/secrets.ini
+debthound/scrapers/dbs/
