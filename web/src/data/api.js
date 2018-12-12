@@ -2,7 +2,7 @@ import Actions from "../Actions";
 
 let origin = '';
 
-if (process != undefined){
+if (process.env.NODE_ENV !== 'production'){
     // we are in dev so
     origin = window.location.protocol + '//' + window.location.hostname + ':' +5000
 
