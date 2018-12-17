@@ -9,12 +9,9 @@ const LeadToolbar = (props) => {
     let menu = React.createRef();
     let rInput = React.createRef();
     let labels = props.labels.toJS().map((label, i)=>({value: label, label: label.name}));
-    let selectedFiltersRaw = localStorage.getItem("selectedFilters");
-    let selectedFilters = selectedFiltersRaw ? JSON.parse(selectedFiltersRaw) : [];
     let selectedFiltersFromLabels = [];
 
-
-    for (let f of selectedFilters){
+    for (let f of props.selectedLabels){
         let item = labels.find(l => l.value.id === f.id)
         if (item) {
             selectedFiltersFromLabels.push(item.value)
@@ -271,10 +268,15 @@ class Leads extends React.Component {
         }
         return (
             <div>
-                <LeadToolbar registerResizeCallBack={this.registerResizeCallBack} leads={this.props.entities.get('results')} searchStr={this.props.entities.get('searchString')}
-                             labels={this.props.labels.get('results')} fetchLables={this.props.fetchLables} fetchLeads={this.props.fetchLeads}
-                             updateLeadLabels={this.props.updateLeadLabels} selectedLeads={this.props.selectedLead.get('selectedLeads')} 
-                             searchLeads={this.props.searchLeads} userApplyLables={this.props.userApplyLables} selectedLabels={this.props.authenticatedUser.get("selectedFilters")}
+                <LeadToolbar registerResizeCallBack={this.registerResizeCallBack} leads={this.props.entities.get('results')}
+                             searchStr={this.props.entities.get('searchString')}
+                             labels={this.props.labels.get('results')}
+                             fetchLables={this.props.fetchLables} fetchLeads={this.props.fetchLeads}
+                             updateLeadLabels={this.props.updateLeadLabels}
+                             selectedLeads={this.props.selectedLead.get('selectedLeads')}
+                             searchLeads={this.props.searchLeads}
+                             userApplyLables={this.props.userApplyLables}
+                             selectedLabels={this.props.authenticatedUser.get("selectedFilters")}
                              selectAllLeads={this.props.selectAllLeads} total={this.props.entities.get('total')}
                 />
                 <ul className="list-group">
