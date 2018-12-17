@@ -6,8 +6,8 @@ from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 import os
 
-EMAILS = ['hfcdocsis@gmail.com',]
-#EMAILS = ['hfcdocsis@gmail.com', 'EZnVA@yahoo.com']
+#EMAILS = ['hfcdocsis@gmail.com',]
+EMAILS = ['hfcdocsis@gmail.com', 'EZnVA@yahoo.com' 't.garcia@preceivables.com']
 
 
 class MyBaseSpider(scrapy.Spider):

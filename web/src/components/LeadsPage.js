@@ -296,7 +296,7 @@ class Leads extends React.Component {
     componentDidMount() {
       let filters = this.props.authenticatedUser.get('selectedFilters');
 
-      if (filters.length){
+      if (filters && filters.length){
           const args = filters.map((s) => (s.name));
           this.props.fetchLeads(1, {labels: args});
       } else {

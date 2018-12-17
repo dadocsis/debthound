@@ -2,11 +2,14 @@ import Actions from "../Actions";
 
 let origin = '';
 
-if (process != undefined){
+if (process.env.NODE_ENV !== 'production'){
     // we are in dev so
     origin = window.location.protocol + '//' + window.location.hostname + ':' +5000
-
 }
+else {
+    origin = window.location.protocol + '//' + window.location.hostname
+}
+
 
 function getAuthHeader() {
     return 'Bearer ' + JSON.parse(localStorage.getItem("access_token"));
