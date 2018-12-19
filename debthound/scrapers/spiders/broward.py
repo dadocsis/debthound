@@ -17,12 +17,15 @@ from scrapers.mylogging import LogToMyDBHandler
 from scrapers.spiders.base import MyBaseSpider
 
 
-doctypes = '138, 168'
+doctypes = '138, 168, 120'
 # 168 = CERTIFIED FINAL JUDGMENT (CFJ)
 # 138 = DEED TRANSFERS OF REAL PROPERTY (D)
+# 120 = RELEASE/REVOKE/SATISFY OR TERMINATE (RST)
+# 121 = RELEASE/REVOKE/SATISFY OR TERMINATE HIDDEN FROM WEB (RSTX)
 doctype_maps = {
     'Certified Final Judgment': '168',
-    'Deed Transfers of Real Property': '138'
+    'Deed Transfers of Real Property': '138',
+    'Release/Revoke/Satisfy or Terminate': '120'
 }
 
 

@@ -23,7 +23,8 @@ doc_type_code_map = {
     'JUD C': 'JUD C',
     'D': 'D',
     '168': 'JUD C',
-    '138': 'D'
+    '138': 'D',
+    '120': 'SAT'
 }
 
 

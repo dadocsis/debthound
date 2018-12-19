@@ -118,7 +118,7 @@ parser.add_argument("-i", type=int, dest='interval',
                     required=True)
 parser.add_argument("--address", type=str, dest='address',
                     help="polling interval in minutes",
-                    required=False, default="http://localhost:80/")
+                    required=False, default="http://127.0.0.1:80/")
 args = parser.parse_args()
 try:
     run(job, args.interval, args.address)

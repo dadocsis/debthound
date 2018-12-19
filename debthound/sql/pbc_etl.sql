@@ -34,8 +34,6 @@ declare jud_doctype_id,
         sat_doctype_id,
         _entity_flag_id INT;
 
-set _entity_flag_id = get_or_create_entity_flag('new lead!', 'green');
-
 select distinct
 	sdt_cj.id,  
 	sdt_deed.id,  
@@ -82,8 +80,39 @@ INSERT INTO work_document_etl
 		and jud.party2 not in ('PALM BEACH COUNTY', 'FL') and jud.party2 != ''
 		and deed.date > jud.date and sat.cfn is null
 
-	order by jud.date;   
+	order by jud.date;      
     
+	# First find the existing entities that have new documents
+	CREATE TEMPORARY TABLE tmp_entity_existing    
+	with  
+		judgments AS (
+			select distinct jud_doc_id as did, defendant_name from work_document_etl
+			union all
+            select distinct deed_doc_id as did, defendant_name from work_document_etl
+        ),
+        results AS (
+			select j.did, e.id from entity e join judgments j on e.name = j.defendant_name
+        )
+	Select r.* 
+	from results r
+	left join documentfact df on df.document_id = r.did
+	where df.document_id is null;     
+    
+    set _entity_flag_id = get_or_create_entity_flag('new lead from existing!', 'green');
+    
+	INSERT INTO entity_flag_association (entity_id, entity_flag_id)
+	select distinct te.id, _entity_flag_id
+	from tmp_entity_existing te
+        left join entity_flag_association efa
+        on efa.entity_id = te.id and efa.entity_flag_id = _entity_flag_id
+	where efa.entity_id is null;
+    
+	INSERT into documentfact
+		(`document_id`, `entity_id`)
+		Select te.did, e.id
+        from tmp_entity_existing te;
+    
+    # Now Find new entities
     CREATE TEMPORARY TABLE tmp_entity
     		select distinct 
 			defendant_name as name
@@ -91,19 +120,20 @@ INSERT INTO work_document_etl
 			left join entity e
             on tr.defendant_name = e.name
 		where e.id is null;
-    
+        
     INSERT INTO entity
 		(`name`)
 		select te.name
 		from tmp_entity te;
 	
+	set _entity_flag_id = get_or_create_entity_flag('new lead!', 'green');
+    
     INSERT INTO entity_flag_association (entity_id, entity_flag_id)
 		select e.id, _entity_flag_id
         from tmp_entity te
 			join entity e
             on te.name = e.name;
-
-	drop temporary table tmp_entity;
+	
 	
     INSERT into documentfact
     (`document_id`, `entity_id`)
@@ -121,7 +151,9 @@ INSERT INTO work_document_etl
 	left join documentfact df on df.document_id = r.did
 	where df.document_id is null;
     
-   --  select * from documentfact
+
+   drop temporary table tmp_entity_existing;
+   drop temporary table tmp_entity;
     
     
 
