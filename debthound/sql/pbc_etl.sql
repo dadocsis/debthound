@@ -109,7 +109,7 @@ INSERT INTO work_document_etl
     
 	INSERT into documentfact
 		(`document_id`, `entity_id`)
-		Select te.did, e.id
+		Select te.did, te.id
         from tmp_entity_existing te;
     
     # Now Find new entities
