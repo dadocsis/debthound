@@ -84,7 +84,7 @@ def send_email(rcpts, subject, msg):
     for rcpt in rcpts:
         requests.post(
             "https://api.mailgun.net/v3/sandbox5aa6487308bc4a609fdc876938113451.mailgun.org/messages",
-            auth=("api", "6a60dd45f0881edec31c1dd71a417769-059e099e-1a5de40a"),
+            auth=("api", os.environ.get('mailgun')),
             data={
                 "from": "Debthound <mailgun@sandbox5aa6487308bc4a609fdc876938113451.mailgun.org>",
                 "to": rcpt,
