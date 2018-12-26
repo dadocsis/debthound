@@ -1,6 +1,6 @@
 from .user import UserResource, UserList
-from .document import (DocumentResource, DocumentByCFNResource, DocumentsCollection,
-                       EntityCollection, DocumentsByEntityId, EntityBatchUpdate, Entity)
+from .document import (DocumentResource, DocumentByCFNResource, DocumentsCollection, PartyCollection,
+                       EntityCollection, DocumentsByEntityId, EntityBatchUpdate, Entity, Party)
 from .site import SiteDoctypes, Sites, SiteSchedules, SiteSchedule
 from .flags import Flags, Flag
 from .spider import RunSpiderRequests, RunSpiderSchedules, RunSpiderSchedule, RunSiteEtl
@@ -25,5 +25,7 @@ __all__ = [
     'RunSpiderSchedule',
     'SiteSchedules',
     'SiteSchedule',
-    'RunSiteEtl'
+    'RunSiteEtl',
+    'PartyCollection',
+    'Party'
 ]

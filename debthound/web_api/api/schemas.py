@@ -31,7 +31,7 @@ class SiteSchema(ma.ModelSchema):
 class DocumentSchema(ma.ModelSchema):
     consideration = Float()
     doc_type = SmartNested(SiteDocTypeSchema, exclude=('documents',))
-    site = SmartNested(SiteSchema, exclude=('doctypes','scrape_logs', 'schedules'))
+    site = SmartNested(SiteSchema, exclude=('doctypes', 'scrape_logs', 'schedules'))
 
     class Meta:
         model = m.Document

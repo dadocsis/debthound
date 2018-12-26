@@ -30,7 +30,12 @@ export const ActionTypes = {
     SCHEDULE_DELETED: 'SCHEDULE_DELETED',
     RCV_SITES: 'RCV_SITES',
     LEAD_SEARCH: 'LEAD_SEARCH',
-    SELECT_ALL_LEADS: 'SELECT_ALL_LEADS'
+    SELECT_ALL_LEADS: 'SELECT_ALL_LEADS',
+    GET_PARTIES: 'GET_PARTIES',
+    RCV_PARTIES: 'RCV_PARTIES',
+    SHOW_BLACKLIST_PARTIES: 'SHOW_BLACKLIST_PARTIES',
+    PARTY_UPDATED: 'PARTY_UPDATED',
+    UPDATE_PARTY: 'UPDATE_PARTY'
 
 };
 
@@ -209,6 +214,37 @@ export const ActionTypes = {
         dispatcher.dispatch({
             type: ActionTypes.SELECT_ALL_LEADS,
             leads
+        })
+    },
+    getParties() {
+        dispatcher.dispatch({
+            type: ActionTypes.GET_PARTIES
+        })
+    },
+    rcvParties(rsp, page, searchStr) {
+        dispatcher.dispatch({
+            type: ActionTypes.RCV_PARTIES,
+            response: rsp,
+            currentPage: page,
+            searchString: searchStr
+        });
+    },
+    updateParty(party) {
+        dispatcher.dispatch({
+            type: ActionTypes.UPDATE_PARTY,
+            party
+        })
+    },
+    partyUpdated(party) {
+        dispatcher.dispatch({
+            type: ActionTypes.PARTY_UPDATED,
+            party
+        })
+    },
+    partyBlackListToggle(on) {
+        dispatcher.dispatch({
+            type: ActionTypes.SHOW_BLACKLIST_PARTIES,
+            value: on
         })
     }
 };

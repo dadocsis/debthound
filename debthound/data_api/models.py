@@ -124,6 +124,7 @@ class Entity(Base):
     name = Column('name', VARCHAR(1500), nullable=False)
     document_facts = relationship('DocumentFact', back_populates='entity')
     flags = relationship('EntityFlag', secondary='entity_flag_association', enable_typechecks=False)
+    black_listed = Column(BOOLEAN, nullable=False, default=False, server_default=expression.text('0'))
 
 
 class EntityFlag(Base):

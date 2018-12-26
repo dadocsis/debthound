@@ -57,7 +57,7 @@ const Label = props => {
         <button type="button" className={deleteButtonStyle} onClick={deleteHandler}>{deleteButtonText}</button>
 
     </div>);
-}
+};
 
 class MyMultiSelect extends React.Component {
 

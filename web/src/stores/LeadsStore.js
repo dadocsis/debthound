@@ -28,7 +28,6 @@ class LeadsStore extends ReduceStore{
                 return state.set("results", Immutable.fromJS(leads));
 
             case ActionTypes.LEAD_SEARCH:
-                console.log(action.searchString);
                 return state.set("searchString", action.searchString);
 
           default:

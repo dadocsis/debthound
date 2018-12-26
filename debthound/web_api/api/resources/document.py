@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, contains_eager
 
 from data_api import models as m
 from web_api.extensions import db
@@ -78,14 +78,114 @@ class EntityCollection(Resource):
         filters = request.args.getlist('labels')
         searchStr = request.args.get('searchString')
         schema = s.EntitySchema(many=True)
-        query = db.session.query(m.Entity)
+        query = db.session.query(m.Entity).filter(m.Entity.document_facts.any())
+        query = query.options(joinedload(m.Entity.document_facts, innerjoin=True), joinedload(m.Entity.flags))
+
         if searchStr:
             query = query.filter(m.Entity.name.like(F'%{searchStr}%'))
         if filters:
             query = query.join(m.Entity.flags).filter(m.EntityFlag.name.in_(filters))
 
-        query = query.options(joinedload(m.Entity.flags), joinedload(m.Entity.document_facts))
         return paginate(query, schema)
+
+
+class PartyCollection(Resource):
+    method_decorators = [jwt_required]
+
+    def get(self):
+        searchStr = request.args.get('searchString')
+        show_blacklist = request.args.get('showBlacklist')
+        schema = s.EntitySchema(many=True, only=('id', 'name', 'black_listed'))
+        query = db.session.query(m.Entity)
+
+        if searchStr:
+            query = query.filter(m.Entity.name.like(F'%{searchStr}%'))
+        if show_blacklist:
+            query = query.filter(m.Entity.black_listed == False)
+
+        return paginate(query, schema)
+
+
+class Party(Resource):
+    method_decorators = [jwt_required]
+
+    def put(self, id):
+        schema = s.EntitySchema(only=('id', 'name', 'black_listed'))
+        from_db = db.session.query(m.Entity).get_or_404(id)
+        ent, error = schema.load(request.json, instance=from_db)
+        if error:
+            return error, 422
+
+        if ent.black_listed:
+            # remove all docs for the entity if defendant
+            if len(ent.document_facts) > 0:
+                ent.flags.clear()
+                db.session.query(m.DocumentFact).filter(m.DocumentFact.entity_id == ent.id).delete()
+
+            jud_id = db.session.query(m.SiteDocType).filter(
+                m.SiteDocType.description == 'Certified Judgment',).first().id
+            deed_id = db.session.query(m.SiteDocType).filter(
+                m.SiteDocType.description == 'Deed', ).first().id
+            jud_ents = db.session.query(m.Entity).\
+                join(m.Entity.document_facts).\
+                join(m.DocumentFact.document).options(
+                    contains_eager(m.Entity.document_facts).contains_eager(m.DocumentFact.document)
+                ).filter_by(
+                        party1=ent.name,
+                        doctype_id=jud_id,
+                ).all()
+
+            # remove all judgment docs for the entity if plantiff
+            jud_ents_ids = []
+            leads_to_remove = []
+            docs_to_remove = []
+            for jud_ent in jud_ents:
+                jud_ents_ids.append(jud_ent.id)
+                for docf in jud_ent.document_facts:
+                    if docf.document.doctype_id == jud_id and docf.document.party1 == ent.name:
+                        docs_to_remove.append(docf)
+
+            for docf in docs_to_remove:
+                db.session.delete(docf)
+
+            db.session.commit()
+
+            # now check if the lead is still valid
+            for id in jud_ents_ids:
+                # reload the enities so we can get all the docs
+                jud_ent = db.session.query(m.Entity).options(
+                    joinedload(m.Entity.document_facts).
+                    joinedload(m.DocumentFact.document)).\
+                    filter(m.Entity.id == id).first()
+                sites = {df.document.site_id for df in jud_ent.document_facts}
+
+                def comp(d):
+                    return d.date
+
+                for site in sites:
+                    judments = sorted([df.document for df in jud_ent.document_facts if
+                                       df.document.site_id == site and df.document.doctype_id == jud_id],
+                                      key=comp, reverse=False)
+
+                    jud = next(iter(judments), None)
+                    deeds = sorted([df.document for df in jud_ent.document_facts if
+                                    df.document.site_id == site and df.document.doctype_id == deed_id],
+                                   key=comp, reverse=True)
+                    deed = next(iter(deeds), None)
+
+                    if jud is not None and deed is not None and jud.date < deed.date:
+                        break
+                else:
+                    leads_to_remove.append(jud_ent)
+
+            for lead in leads_to_remove:
+                lead.flags.clear()
+                for df in lead.document_facts:
+                    db.session.delete(df)
+
+        db.session.commit()
+
+        return schema.dump(ent).data
 
 
 class EntityBatchUpdate(Resource):

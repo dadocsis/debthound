@@ -58,7 +58,8 @@ TRUNCATE TABLE work_document_etl;
 INSERT INTO work_document_etl 
     
 	select 
-		jud.party2 as `defendant_name`        
+		jud.party2 as `defendant_name`
+        ,jud.party1 as `plantiff_name`
 		,jud.id as `jud_doc_id`
         ,deed.id as `deed_doc_id`
 	from 
@@ -76,13 +77,18 @@ INSERT INTO work_document_etl
             and sat.party1 = jud.party1 
             and sat.date > jud.date
             and sat.site_id = s.id
-	where  jud.party1 not in ('FLORIDA', 'PALM BEACH COUNTY', 'FL', 'FLORIDA,PALM BEACH COUNTY', 'PALM BEACH COUNTY,FLORIDA') 
+		left join entity black_listed_plantiffs 
+        on black_listed_plantiffs.name = jud.party1 and black_listed_plantiffs.black_listed = 1
+        left join entity black_listed_defendants 
+        on black_listed_defendants.name = jud.party2 and black_listed_plantiffs.black_listed = 1
+	where  black_listed_plantiffs.name is null and black_listed_defendants.name is null
 		and jud.party2 not in ('PALM BEACH COUNTY', 'FL') and jud.party2 != ''
 		and deed.date > jud.date and sat.cfn is null
+        and s.id = 1
 
 	order by jud.date;      
     
-	# First find the existing entities that have new documents
+	# First find the existing defendants that have new documents
 	CREATE TEMPORARY TABLE tmp_entity_existing    
 	with  
 		judgments AS (
@@ -112,7 +118,7 @@ INSERT INTO work_document_etl
 		Select te.did, te.id
         from tmp_entity_existing te;
     
-    # Now Find new entities
+    # Now Find new defendents
     CREATE TEMPORARY TABLE tmp_entity
     		select distinct 
 			defendant_name as name
@@ -150,6 +156,17 @@ INSERT INTO work_document_etl
 	from results r
 	left join documentfact df on df.document_id = r.did
 	where df.document_id is null;
+    
+    # Find new plantiff entities
+	INSERT INTO entity
+	(`name`)
+    select distinct
+				etl.plantiff_name
+           from	work_document_etl etl
+	  left join entity e 
+			 on e.name = etl.plantiff_name
+	      where e.name is null;
+
     
 
    drop temporary table tmp_entity_existing;

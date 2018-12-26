@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, NavLink} from "react-router-dom";
 import {COLORS, Label, MyMultiSelect, ordinal_suffix_of, WEEKDAYS, getDayOfWeek} from './Common'
 import Loader from "react-loader-spinner";
+import Pager from "./Pager";
 
 
 
@@ -13,9 +14,9 @@ const AdminHeader = (props) => (
         <li className="nav-item">
             <NavLink className="nav-link" activeClassName="active" to="/Admin/Schedules">Schedules</NavLink>
         </li>
-        {/*<li className="nav-item">*/}
-            {/*<a className="nav-link" href="#">Link</a>*/}
-        {/*</li>*/}
+        <li className="nav-item">
+            <NavLink className="nav-link" activeClassName="active" to="/Admin/Parties">Party Administration</NavLink>
+        </li>
         {/*<li className="nav-item">*/}
             {/*<a className="nav-link disabled" href="#">Disabled</a>*/}
         {/*</li>*/}
@@ -238,6 +239,147 @@ class AdminSchedules extends React.Component{
 
 }
 
+class PartyAdmin extends React.Component {
+
+    componentDidMount() {
+        this.props.fetchParties(1);
+        this.handleSearch = this.handleSearch.bind(this);
+        this.handleShowBlackListToggle = this.handleShowBlackListToggle.bind(this);
+        this.handleBlackListToggle = this.handleBlackListToggle.bind(this);
+        this.handlePager = this.handlePager.bind(this);
+        this.enterKey = this.enterKey.bind(this);
+    };
+
+    handleSearch(searchStr) {
+        let args = {};
+        if (this.props.parties.get('showBlacklist') === false){
+            args.showBlacklist = false;
+        }
+        if (searchStr.length > 2) {
+            args.searchString = searchStr;
+            this.props.fetchParties(1, {...args});
+        }
+        else if (searchStr.length === 0){
+            delete args.searchString;
+            this.props.fetchParties(1, {...args});
+        }
+    }
+
+    handleShowBlackListToggle(e){
+        this.props.toggleBlackList(e.target.checked);
+        let that = this;
+        setTimeout(function () {
+            that.handleSearch(that.props.parties.get('searchString') || '')
+        }, 300);
+        //this.handleSearch(this.props.parties.get('searchString') || '');
+    }
+
+    handleBlackListToggle(party, on){
+        party.black_listed = on;
+        this.props.updateParty(party);
+    }
+
+    enterKey(e){
+        if (e.key === 'Enter') {
+            let args = {};
+            args.searchString = e.target.value;
+            if (this.props.parties.get('showBlacklist') === false){
+                args.showBlacklist = false;
+            }
+            if (args.searchString.length > 0) {
+                this.props.fetchParties(1, {...args});
+            }
+            else if (args.searchString.length === 0){
+                delete args.searchString;
+                this.props.fetchParties(1, {...args});
+            }
+        }
+    }
+
+    handlePager(page) {
+        let args = {};
+        let searchStr = this.props.parties.get('searchString');
+
+        if (this.props.parties.get('showBlacklist') === false){
+            args.showBlacklist = false;
+        }
+        if (searchStr && searchStr.length > 0) {
+            args.searchString = searchStr;
+        }
+
+        this.props.fetchParties(page, {...args})
+    }
+
+    render() {
+        let isLoading = this.props.parties.get('isLoading') === true;
+        let loadingParty = this.props.parties.get('updateParty');
+        return (
+            <div>
+                <div>
+                    <div className="mt-2 col-lg-12">
+                        <input type="text" placeholder="Search" className="w-50"
+                               onChange={e => this.handleSearch(e.target.value)} onKeyPress={this.enterKey}/>
+                        <input type="checkbox" checked={this.props.parties.get('showBlacklist') === true}
+                               onChange={this.handleShowBlackListToggle}/> <label>Show Black Listed Parties</label>
+                    </div>
+                {
+                isLoading &&
+                    <Loader
+                        type="Puff"
+                        color="#00BFFF"
+                        height="50"
+                        width="50"/>
+                }
+                    {
+                        !isLoading &&
+                         <div>
+                            <table className="table table-sm">
+                                <thead>
+                                <tr>
+                                    <th>Party Name</th>
+                                    <th>BlackList</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {this.props.parties.get("results").toJS().map((s, idx) => {
+                                    let partyid = loadingParty ? loadingParty.id : undefined
+                                    let isUpdating = s.id === partyid;
+                                    return (
+                                    <tr key={idx}>
+                                        <td>{s.name}</td>
+                                        <td>
+                                            {!isUpdating &&
+                                            <input type="checkbox" name="black_listed"
+                                                   checked={s.black_listed}
+                                                   onChange={(e) => this.handleBlackListToggle(s, e.target.checked)}/>
+                                            }
+                                            { isUpdating &&
+                                                <Loader
+                                                    type="Puff"
+                                                    color="#00BFFF"
+                                                    height="15"
+                                                    width="15"/>
+                                            }
+                                        </td>
+                                    </tr>)})
+
+                                }
+                                </tbody>
+                            </table>
+
+                            {this.props.parties.get('pages') > 1 &&
+                                <Pager currentPage={this.props.parties.get('currentPage')}
+                                       totalPages={this.props.parties.get('pages')}
+                                       handlePageClick={this.handlePager} />}
+                       </div>
+                    }
+                </div>
+
+            </div>
+        )
+    }
+}
+
 const AdminPage = props => (
     <div className="container">
         <AdminHeader/>
@@ -245,6 +387,8 @@ const AdminPage = props => (
                render={routeProps => (<AdminLabels {...routeProps} {...props}/>)}/>
         <Route path="/Admin/Schedules"
                render={routeProps => (<AdminSchedules {...routeProps} {...props}/>)}/>
+        <Route path="/Admin/Parties"
+               render={routeProps => (<PartyAdmin {...routeProps} {...props}/>)}/>
     </div>
 );
 

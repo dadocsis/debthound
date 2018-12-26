@@ -9,13 +9,14 @@ import SelectedLeadStore from './stores/SelectedLeadStore'
 import LablesStore from './stores/LabelsStore'
 import {Container} from 'flux/utils';
 import './App.css';
-import {fetchLeads, getDocsForLead, fetchLables, deleteLabel, deleteSchedule,
-        batchUpdateLeadLabels, updateLead, userLogin, fetchSchedules} from './data/DataManager';
+import {fetchLeads, getDocsForLead, fetchLables, deleteLabel, deleteSchedule, updateParty,
+        batchUpdateLeadLabels, updateLead, userLogin, fetchSchedules, fetchParties} from './data/DataManager';
 import Actions from './Actions'
 import DraftLabelStore from "./stores/DraftLabelStore";
 import AuthenticatedUserStore from './stores/AuthenticatedUserStore'
 import SchedulesStore from './stores/SchedulesStore'
 import DraftScheduleStore from './stores/DraftScheduleStore'
+import PartyStore from './stores/PartyStore'
 
 const Header = (props) => {
     let isAuthed = !!props.isAuthed;
@@ -115,7 +116,8 @@ function getStores() {
     DraftLabelStore,
     AuthenticatedUserStore,
     SchedulesStore,
-    DraftScheduleStore
+    DraftScheduleStore,
+    PartyStore
   ];
 }
 
@@ -152,7 +154,11 @@ function getState() {
     deleteSchedule,
     searchLeads: Actions.searchLeads,
     userApplyLables: Actions.userApplyLables,
-    selectAllLeads: Actions.selectAllLeads
+    selectAllLeads: Actions.selectAllLeads,
+    fetchParties,
+    parties: PartyStore.getState(),
+    updateParty,
+    toggleBlackList: Actions.partyBlackListToggle
   };
 }
 

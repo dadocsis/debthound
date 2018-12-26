@@ -4,7 +4,7 @@ from flask_restful import Api
 from web_api.api.resources import (UserResource, UserList, DocumentResource, DocumentByCFNResource, Sites, SiteDoctypes,
                                    DocumentsCollection, EntityCollection, DocumentsByEntityId, Flags, Flag,
                                    EntityBatchUpdate, Entity, RunSpiderRequests, RunSpiderSchedules, RunSpiderSchedule,
-                                   SiteSchedules, SiteSchedule, RunSiteEtl)
+                                   SiteSchedules, SiteSchedule, RunSiteEtl, PartyCollection, Party)
 
 blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
 api = Api(blueprint)
@@ -30,3 +30,5 @@ api.add_resource(RunSpiderSchedule, '/runspiderschedules/<int:id>')
 api.add_resource(SiteSchedules, '/siteSchedules')
 api.add_resource(SiteSchedule, '/siteSchedules/<int:id>')
 api.add_resource(RunSiteEtl, '/runSiteETLs')
+api.add_resource(PartyCollection, '/parties')
+api.add_resource(Party, '/parties/<int:id>')

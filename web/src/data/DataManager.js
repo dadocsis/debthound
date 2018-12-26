@@ -1,6 +1,7 @@
 import Actions from '../Actions'
-import {getEntities, getDocumentsForLead, saveLabel, getLables, deleteLabel as _deleteLabel, deleteSchedule as _deleteSchedule,
-        updateLeadLables, updateLead as _updateLead, loginUser, getSchedules, saveSchedule, getSites} from "./api";
+import {getEntities, getDocumentsForLead, saveLabel, getLables, deleteLabel as _deleteLabel,
+        deleteSchedule as _deleteSchedule, updateLeadLables, updateLead as _updateLead, loginUser, getSchedules,
+        saveSchedule, getSites, getParties, putParty} from "./api";
 
 export const fetchLeads = (page=1, args={}) => {
     Actions.getEntities();
@@ -77,4 +78,14 @@ export const saveDraftSchedule = (schedules) => {
 
 export const deleteSchedule = (id) => {
     _deleteSchedule(id, rsp => Actions.scheduleDeleted(id))
+};
+
+export const fetchParties = (page=1, args={}) => {
+    Actions.getParties();
+    getParties(page, args, (rsp) => Actions.rcvParties(rsp, page, args.searchString))
+};
+
+export const updateParty = (party) => {
+    Actions.updateParty(party);
+    putParty(party, Actions.partyUpdated)
 };

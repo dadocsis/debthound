@@ -50,7 +50,6 @@ class DraftScheduleStore extends ReduceStore{
                 data.end = new Date(sched.end + ts).toISOString().substring(0, 10);
                 data.time = new Date("2018-01-01T" + sched.time + ":00").toISOString().substring(11,19);
                 data.day = data.exact ?  parseInt(sched.day.substring(0,2)) : sched.days;
-                console.log(data)
                 // todo: break out multiple scheds if exact is false (data.day will be an array)
                 let schedules = [];
                 if (Array.isArray(data.day)){
