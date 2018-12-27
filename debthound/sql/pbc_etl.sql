@@ -84,7 +84,7 @@ INSERT INTO work_document_etl
 	where  black_listed_plantiffs.name is null and black_listed_defendants.name is null
 		and jud.party2 not in ('PALM BEACH COUNTY', 'FL') and jud.party2 != ''
 		and deed.date > jud.date and sat.cfn is null
-        and s.id = 1
+        and s.id = _site_id
 
 	order by jud.date;      
     

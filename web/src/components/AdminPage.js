@@ -186,6 +186,18 @@ class AdminSchedules extends React.Component{
         alert("todo: delete schedule")
     }
 
+    getLocalTime(timeStr) {
+        let utcdate = new Date('Feb 16, 1982 ' + timeStr + ' GMT+00:00');
+        return utcdate.toLocaleTimeString();
+        // let newDate = new Date(utcdate.getTime()+utcdate.getTimezoneOffset()*60*1000);
+        // let offset = date.getTimezoneOffset() / 60;
+        // let hours = date.getHours();
+        //
+        // newDate.setHours(hours - offset);
+        //
+        // return newDate;
+    }
+
     render() {
         let {schedules, cancelDraftSchedule, draftSchedule, saveDraftSchedule,
             draftScheduleChange, deleteSchedule, fetchSchedules, createDraftSchedule} = this.props;
@@ -219,7 +231,7 @@ class AdminSchedules extends React.Component{
                             <tr key={idx}>
                                 <td>{s.site.spider_name}</td>
                                 <td>{s.exact && "Monthly" || "Weekly"}</td>
-                                <td>{s.exact && ordinal_suffix_of(s.day) + s.time || getDayOfWeek(s.day-1) +' '+ s.time}</td>
+                                <td>{s.exact && ordinal_suffix_of(s.day) + this.getLocalTime(s.time) || getDayOfWeek(s.day-1) +' '+ this.getLocalTime(s.time)}</td>
                                 <td>{s.start}</td>
                                 <td>{s.end}</td>
                                 <td><i className="fas fa-times" onClick={e => deleteSchedule(s.id)}></i></td>
