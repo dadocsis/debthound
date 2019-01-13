@@ -12,7 +12,7 @@ const LeadToolbar = (props) => {
     let selectedFiltersFromLabels = [];
 
     for (let f of props.selectedLabels){
-        let item = labels.find(l => l.value.id === f.id)
+        let item = labels.find(l => l.value.id === f.id);
         if (item) {
             selectedFiltersFromLabels.push(item.value)
         }
@@ -116,7 +116,8 @@ const LeadToolbar = (props) => {
                             <form className="px-2">
                                 <div className="form-group">
                                     <label htmlFor="lead-filter" className="font-weight-bold">Lead Filter</label>
-                                    <MyMultiSelect overrideOptions={{showSubmitChangeButton: true}} options={labels} myApplyHandler={applyLables} selected={selectedFiltersFromLabels}/>
+                                    {labels.length > 0 &&
+                                    <MyMultiSelect overrideOptions={{showSubmitChangeButton: true}} options={labels} myApplyHandler={applyLables} selected={selectedFiltersFromLabels}/> }
 
                                 </div>
                             </form>

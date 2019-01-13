@@ -5,6 +5,8 @@ import json
 from dateutil.relativedelta import relativedelta
 from collections import defaultdict
 import os
+import smtplib
+from email.mime.text import MIMEText
 
 #EMAILS = ['hfcdocsis@gmail.com',]
 EMAILS = ['hfcdocsis@gmail.com', 'EZnVA@yahoo.com' 't.garcia@preceivables.com']
@@ -81,15 +83,9 @@ class MyBaseSpider(scrapy.Spider):
 
 
 def send_email(rcpts, subject, msg):
-    for rcpt in rcpts:
-        requests.post(
-            "https://api.mailgun.net/v3/sandbox5aa6487308bc4a609fdc876938113451.mailgun.org/messages",
-            auth=("api", os.environ.get('mailgun')),
-            data={
-                "from": "Debthound <mailgun@sandbox5aa6487308bc4a609fdc876938113451.mailgun.org>",
-                "to": rcpt,
-                "subject": subject,
-                "text": msg
-            },
-            verify=False
-        )
+    m = MIMEText(msg)
+    m['Subject'] = subject
+    m['From'] = 'debthound@li174-210.members.linode.com'
+    m['To'] = ', '.join(rcpts)
+    s = smtplib.SMTP('localhost', port=25)
+    s.send_message(m)

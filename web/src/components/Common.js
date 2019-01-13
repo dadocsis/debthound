@@ -63,20 +63,15 @@ class MyMultiSelect extends React.Component {
 
     constructor(props) {
         super(props);
-        if (this.props.selected){
-            this.state = {selected: this.props.selected}
-        }
-        else {
-            this.state = {selected: [],}
-        };
+        this.state = {selected: []}
     }
+
 
     handleSelectedChanged(selected) {
         this.setState({selected});
         if (this.props.myChangeHandler){
             this.props.myChangeHandler(selected)
         }
-
     }
 
     handleApplyMultiSelect(){
@@ -85,12 +80,8 @@ class MyMultiSelect extends React.Component {
         }
     }
 
-    // componentDidMount() {
-    //     this.setState({selected: this.props.selected || []})
-    // }
-
     render() {
-        const {
+        let {
             ItemRenderer,
             options,
             selectAllLabel,
@@ -100,9 +91,10 @@ class MyMultiSelect extends React.Component {
             disableSearch,
             filterOptions,
             overrideStrings,
-            overrideOptions
+            overrideOptions,
+            selected,
         } = this.props;
-        const {selected} = this.state;
+        selected = this.state.selected.length > 0 ? this.state.selected : selected || [];
 
         return <div>
             <MultiSelect
