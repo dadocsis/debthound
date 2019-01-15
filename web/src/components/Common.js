@@ -63,7 +63,7 @@ class MyMultiSelect extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {selected: []}
+        this.state = {selected: null}
     }
 
 
@@ -94,7 +94,7 @@ class MyMultiSelect extends React.Component {
             overrideOptions,
             selected,
         } = this.props;
-        selected = this.state.selected.length > 0 ? this.state.selected : selected || [];
+        selected = this.state.selected || selected || [];
 
         return <div>
             <MultiSelect

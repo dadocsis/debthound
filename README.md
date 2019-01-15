@@ -16,6 +16,22 @@ set http_proxy=http://localhost:17560
 - copy secrets file
 - run web_api init
 
+##basic deploy instructions
+- git pull
+- (from debthound library folder)rsync -avP debthound/ /opt/debthound/debthound
+- sudo su
+- cd /opt/debthound/debthound
+- . /opt/debthound/py_venv/bin/activate
+- python setup.py install
+- systemctl restart httpd
+[web]
+- cd src/debthound/web/
+- npm install
+- npm run-script build
+- rsync -avP /home/dadocsis/src/debthound/web/build/  /var/www/debthound/
+
+
+
 ##deploy spiders to scrapyd
 - pip install scrapyd-client
 - if lower env must set ENV=local (if local) need to do this before running scrapy d
