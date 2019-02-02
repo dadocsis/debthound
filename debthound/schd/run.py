@@ -44,7 +44,7 @@ def job(api_address: str):
             first_day_of_week = current_dt - datetime.timedelta(days=current_dt.weekday())
             day_to_run = first_day_of_week + datetime.timedelta(days=sched['day'] -1)
             date_time_to_run = datetime.datetime(year=current_dt.year,
-                                            month=current_dt.month,
+                                            month=day_to_run.month,
                                             day=day_to_run.day,
                                             hour=sched['time'].hour,
                                             minute=sched['time'].minute,
@@ -69,6 +69,7 @@ def job(api_address: str):
                 run_now.append(run_sched)
 
     spiders = []
+    run_now = sorted(run_now, key=lambda x: x['params']['end_date'], reverse=False)
     for run_sched in run_now:
         if run_sched['spider'] in spiders:
             continue
