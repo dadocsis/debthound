@@ -9,7 +9,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 #EMAILS = ['hfcdocsis@gmail.com',]
-EMAILS = ['hfcdocsis@gmail.com', 'EZnVA@yahoo.com' 't.garcia@preceivables.com']
+EMAILS = ['hfcdocsis@gmail.com', 'EZnVA@yahoo.com', 't.garcia@preceivables.com']
 
 
 class MyBaseSpider(scrapy.Spider):
