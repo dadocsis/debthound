@@ -17,16 +17,7 @@ from scrapers.mylogging import LogToMyDBHandler
 from scrapers.spiders.base import MyBaseSpider
 
 
-doctypes = '138, 168, 120'
-# 168 = CERTIFIED FINAL JUDGMENT (CFJ)
-# 138 = DEED TRANSFERS OF REAL PROPERTY (D)
-# 120 = RELEASE/REVOKE/SATISFY OR TERMINATE (RST)
-# 121 = RELEASE/REVOKE/SATISFY OR TERMINATE HIDDEN FROM WEB (RSTX)
-doctype_maps = {
-    'Certified Final Judgment': '168',
-    'Deed Transfers of Real Property': '138',
-    'Release/Revoke/Satisfy or Terminate': '120'
-}
+
 
 
 def get_form_data(doc_type, from_date, to_date):
@@ -45,6 +36,17 @@ class Broward(MyBaseSpider):
     grid_results = 'https://officialrecords.broward.org/AcclaimWeb/Search/GridResults'
     has_results = 'https://officialrecords.broward.org/AcclaimWeb/Search/HasResults'
     id = 'https://officialrecords.broward.org'
+    image_url = 'https://officialrecords.broward.org/AcclaimWeb/Image/DocumentPdfAllPages/'
+    _doctypes = '138, 168, 120'
+    # 168 = CERTIFIED FINAL JUDGMENT (CFJ)
+    # 138 = DEED TRANSFERS OF REAL PROPERTY (D)
+    # 120 = RELEASE/REVOKE/SATISFY OR TERMINATE (RST)
+    # 121 = RELEASE/REVOKE/SATISFY OR TERMINATE HIDDEN FROM WEB (RSTX)
+    _doctype_maps = {
+        'Certified Final Judgment': '168',
+        'Deed Transfers of Real Property': '138',
+        'Release/Revoke/Satisfy or Terminate': '120'
+    }
 
     init_days_increment = 14
     page_size = 10000
@@ -53,7 +55,7 @@ class Broward(MyBaseSpider):
         super(Broward, self).__init__(*args, **kwargs)
         assert kwargs.get('mysql_url')
         self.mysql_url = kwargs.get('mysql_url')
-        self.doctypes = [kwargs['doctypes']] if kwargs.get('doctypes', None) else doctypes
+        self.doctypes = [kwargs['doctypes']] if kwargs.get('doctypes', None) else self._doctypes
         self._days_increment = relativedelta(days=self.init_days_increment)
         self._from_date = datetime.strptime(kwargs['start_date'], '%m/%d/%Y').date()
         self._max_date = datetime.strptime(kwargs['end_date'], '%m/%d/%Y').date()
@@ -167,7 +169,7 @@ class Broward(MyBaseSpider):
                 else:
                     json_data = json.loads(rsp.text)
                     databag.extend(json_data['data'])
-                info = 'doc_type={0}, from_date={1}, to_date={2}'.format(doctypes, from_date,
+                info = 'doc_type={0}, from_date={1}, to_date={2}'.format(self.doctypes, from_date,
                                                                          to_date)
                 info = '{0} rec_count={1}'.format(str(len(databag)), info)
                 m = "scraping page for {0}".format(info)
@@ -183,20 +185,20 @@ class Broward(MyBaseSpider):
                             name=d['CompressedDirectName'],
                             cross_name=d['CompressedIndirectName'],
                             date=datetime.fromtimestamp(int(rdate[:10])).date().strftime('%m/%d/%Y'),
-                            type_=doctype_maps[d['DocTypeDescription']],
+                            type_=self._doctype_maps[d['DocTypeDescription']],
                             book=d['BookPage'].split('/')[0] if len(d['BookPage'].split('/')) > 1 else '',
                             book_type=d['BookType'],
                             page=d['BookPage'].split('/')[1] if len(d['BookPage'].split('/')) > 1 else '',
                             pages='',
                             cfn=d['InstrumentNumber'],
-                            legal=d['DocLegalDescription'],
+                            legal=d.get('DocLegalDescription'),
                             info=info,
-                            image_uri='https://officialrecords.broward.org/AcclaimWeb/Image/DocumentPdfAllPages/' + str(d['TransactionItemId']),
+                            image_uri=self.image_url + str(d['TransactionItemId']),
                             consideration=d['Consideration']
                         )
                         yield item
                     except Exception as ex:
-                        logging.getLogger().error("error creating item: {0}".format(d))
+                        logging.getLogger().exception("error creating item: {0}".format(d))
                         continue
             # go to next date range search
             from_date = self._increment_days(to_date, 1)
@@ -204,7 +206,7 @@ class Broward(MyBaseSpider):
 
             if from_date < self._max_date:
                 if to_date > self._max_date:
-                    info = 'doc_type={0}, from_date={1}, to_date={2}'.format(doctypes,
+                    info = 'doc_type={0}, from_date={1}, to_date={2}'.format(self.doctypes,
                                                                              from_date,
                                                                              to_date)
                     print("to_date: > maxdate: for {0} ; Maxdate is {1}".format(info, self._max_date))
