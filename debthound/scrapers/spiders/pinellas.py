@@ -24,9 +24,9 @@ for k in SAT_DESC:
 
 # hack to trust ca
 try:
-    print('Checking connection to Slack...')
+    print('Checking connection .')
     test = requests.get('https://officialrecords.mypinellasclerk.org/search/Disclaimer?st=/search/SearchTypeDocType')
-    print('Connection to Slack OK.')
+    print('Connection OK.')
 except requests.exceptions.SSLError as err:
     print('SSL Error. Adding custom certs to Certifi store...')
     cafile = certifi.where()
