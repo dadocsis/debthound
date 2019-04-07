@@ -1,4 +1,6 @@
-
+import os
+import requests
+import certifi
 from scrapers.spiders.broward import Broward
 
 CERTIFIED_JUDGEMENTS = ['233', '238', '239', '240', '242', '243', '250', '251', '252', '852', '852']
@@ -18,6 +20,25 @@ for k in DEED_DESC:
 
 for k in SAT_DESC:
     maps[k] = 'SAT'
+
+
+# hack to trust ca
+try:
+    print('Checking connection to Slack...')
+    test = requests.get('https://officialrecords.mypinellasclerk.org/search/Disclaimer?st=/search/SearchTypeDocType')
+    print('Connection to Slack OK.')
+except requests.exceptions.SSLError as err:
+    print('SSL Error. Adding custom certs to Certifi store...')
+    cafile = certifi.where()
+    here = os.path.dirname(os.path.realpath(__file__))
+    myca = os.path.join(here, 'digi.crt')
+    with open(myca, 'rb') as infile:
+        customca = infile.read()
+
+    with open(cafile, 'ab') as outfile:
+        outfile.write(customca)
+    print('That might have worked.')
+
 
 
 class Pinellas(Broward):
