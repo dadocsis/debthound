@@ -1,5 +1,5 @@
 SELECT COUNT(*) FROM debthound.document;
-
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
 with
 Judgements AS 
 	(SELECT distinct
@@ -36,3 +36,8 @@ Select distinct
 FROM Judgements j 
 JOIN Deeds d 
 	on j.party2 = d.party1 and trim(j.party2) != ''
+where d.site_id = 1;
+COMMIT;
+
+
+select * from document d where d.site_id = 2 and cfn = '108325810' LIMIT 5000

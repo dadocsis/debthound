@@ -33,6 +33,7 @@ set http_proxy=http://localhost:17560
 
 
 ##deploy spiders to scrapyd
+- add site and sitedocs
 - pip install scrapyd-client
 - if lower env must set ENV=local (if local) need to do this before running scrapy d
 - cd into root dir (where scrapyd.cfg lives)

@@ -50,6 +50,7 @@ class Broward(MyBaseSpider):
 
     init_days_increment = 14
     page_size = 10000
+    overflow_err_msg = 'The number of results exceeded the maximum limit'
 
     def __init__(self, *args, **kwargs):
         super(Broward, self).__init__(*args, **kwargs)
@@ -106,10 +107,9 @@ class Broward(MyBaseSpider):
         r_date_ex = re.compile(r'/Date\((\d+)\)/')
 
         while from_date < self._max_date:
-
             print('type={0}, start={1}, end={2}'.format(self.doctypes, from_date, to_date))
             rsp = self.make_doctype_request(self.doctypes, from_date, to_date)
-            while 'The number of results exceeded the maximum limit' in rsp.text:
+            while self.overflow_err_msg in rsp.text:
                 info = 'doc_type={0}, from_date={1}, to_date={2}'.format(self.doctypes, from_date,
                                                                          to_date)
                 print("overflow with {0}".format(info))
@@ -125,12 +125,15 @@ class Broward(MyBaseSpider):
                     break
 
                 rsp = self.make_doctype_request(self.doctypes, from_date, to_date)
-            rsp = requests.get(self.has_results,
-                               #verify=os.environ.get('ca_cert', False),
-                               cookies=self.session)
-            if rsp.text != 'True':
-                print("no results")
-            else:
+            has_results = True
+            if self.has_results:
+                rsp = requests.get(self.has_results,
+                                   #verify=os.environ.get('ca_cert', False),
+                                   cookies=self.session)
+                if rsp.text != 'True':
+                    print("no results")
+                    has_results = False
+            if has_results:
                 databag = []
                 data = {'page': '1', 'size': self.page_size}
                 rsp = requests.post(self.grid_results,
@@ -171,7 +174,7 @@ class Broward(MyBaseSpider):
                     databag.extend(json_data['data'])
                 info = 'doc_type={0}, from_date={1}, to_date={2}'.format(self.doctypes, from_date,
                                                                          to_date)
-                info = '{0} rec_count={1}'.format(str(len(databag)), info)
+                info = '{0} rec_count={1}'.format(info, str(len(databag)))
                 m = "scraping page for {0}".format(info)
                 print(m)
                 logging.getLogger().info(m)
@@ -194,7 +197,7 @@ class Broward(MyBaseSpider):
                             legal=d.get('DocLegalDescription'),
                             info=info,
                             image_uri=self.image_url + str(d['TransactionItemId']),
-                            consideration=d['Consideration']
+                            consideration=d.get('Consideration', 0)
                         )
                         yield item
                     except Exception as ex:
