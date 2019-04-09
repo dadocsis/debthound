@@ -80,7 +80,7 @@ INSERT INTO work_document_etl
 		left join entity black_listed_plantiffs 
         on black_listed_plantiffs.name = jud.party1 and black_listed_plantiffs.black_listed = 1
         left join entity black_listed_defendants 
-        on black_listed_defendants.name = jud.party2 and black_listed_plantiffs.black_listed = 1
+        on black_listed_defendants.name = jud.party2 and black_listed_defendants.black_listed = 1
 	where  black_listed_plantiffs.name is null and black_listed_defendants.name is null
 		and jud.party2 not in ('PALM BEACH COUNTY', 'FL') and jud.party2 != ''
 		and deed.date > jud.date and sat.cfn is null
