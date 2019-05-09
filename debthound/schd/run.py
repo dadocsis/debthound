@@ -30,7 +30,7 @@ def run(job, interval: int, api_address):
 
 # todo: params (ie start end scrape date) should come from database
 def job(api_address: str):
-    est = pytz.timezone('EST')
+    est = pytz.timezone('America/New_York')
     current_dt = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
     current_dt_est = current_dt.astimezone(est)  # this should convert from utc to est
     rsp = requests.get('{0}{1}'.format(api_address, SCHEDULES_EP))
@@ -49,6 +49,8 @@ def job(api_address: str):
                                                      day=day_to_run_utc.day, hour=sched['time'].hour,
                                                      minute=sched['time'].minute, second=sched['time'].second,
                                                      tzinfo=pytz.UTC).astimezone(est)
+        if date_time_to_run_est.day != current_dt_est.day:
+            continue
         if sched['end'] >= date_time_to_run_est.date() >= sched['start']:
             run_sched = {
                 'project': 'debthound',
@@ -59,7 +61,7 @@ def job(api_address: str):
                 }
             }
             #  since UTC does not have dst we have to adjust when we are in dst
-            if last_poll_date_est < date_time_to_run_est and date_time_to_run_est.day == current_dt_est.day:
+            if last_poll_date_est < date_time_to_run_est and current_dt_est >= date_time_to_run_est:
                 if sched['time'] <= current_dt_est.time():
                     run_now.append(run_sched)
 
