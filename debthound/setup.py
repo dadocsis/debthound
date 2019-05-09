@@ -26,6 +26,7 @@ setup(
         'scrapyd',
         'schedule'
     ],
+    setup_requires=['pytest', 'requests-mock', 'freezegun'],
     entry_points={
         'console_scripts': [
             'web_api = web_api.manage:cli'

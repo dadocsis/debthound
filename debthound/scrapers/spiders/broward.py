@@ -7,17 +7,9 @@ import requests
 
 from urllib.parse import urlencode
 from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
-
-from scrapy.utils.response import open_in_browser
-from scrapy import signals
 
 from scrapers.items import PBCPublicRecord
-from scrapers.mylogging import LogToMyDBHandler
 from scrapers.spiders.base import MyBaseSpider
-
-
-
 
 
 def get_form_data(doc_type, from_date, to_date):
@@ -47,43 +39,11 @@ class Broward(MyBaseSpider):
         'Deed Transfers of Real Property': '138',
         'Release/Revoke/Satisfy or Terminate': '120'
     }
+    loglevel = logging.INFO
 
     init_days_increment = 14
     page_size = 10000
     overflow_err_msg = 'The number of results exceeded the maximum limit'
-
-    def __init__(self, *args, **kwargs):
-        super(Broward, self).__init__(*args, **kwargs)
-        assert kwargs.get('mysql_url')
-        self.mysql_url = kwargs.get('mysql_url')
-        self.doctypes = [kwargs['doctypes']] if kwargs.get('doctypes', None) else self._doctypes
-        self._days_increment = relativedelta(days=self.init_days_increment)
-        self._from_date = datetime.strptime(kwargs['start_date'], '%m/%d/%Y').date()
-        self._max_date = datetime.strptime(kwargs['end_date'], '%m/%d/%Y').date()
-
-        if self._from_date + self._days_increment <= self._max_date:
-            self._to_date = self._from_date + self._days_increment
-        else:
-            self._to_date = self._max_date
-
-        self._max_date = self._max_date if self._max_date <= date.today() else date.today()
-        assert self._from_date < self._to_date
-        self.session = None
-        self.log_id = None # this gets set in the logging extension
-
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(Broward, cls).from_crawler(crawler, *args, **kwargs)
-        crawler.signals.connect(spider.setup_custom_logging, signal=signals.engine_started)
-        return spider
-
-    def setup_custom_logging(self):
-        # Where are doing some custom logging b/c we lose the default logging functionality from doing request nonasync
-        root_logger = logging.getLogger()
-        root_logger.setLevel(logging.DEBUG)
-        hndlr = LogToMyDBHandler(self.mysql_url, self.log_id)
-        hndlr.setLevel(logging.INFO)
-        root_logger.addHandler(hndlr)
 
     def start_requests(self):
         print('getting a session')

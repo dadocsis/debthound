@@ -16,9 +16,6 @@ from scrapers.items import PBCPublicRecord
 from scrapers.spiders.base import MyBaseSpider
 
 
-doctypes = ['JUD C', 'D', 'SAT']
-
-
 def get_form_data(search_entry, from_date, to_date):
     return {
         'search_by': 'DocType',
@@ -33,6 +30,7 @@ def get_form_data(search_entry, from_date, to_date):
 
 
 class PBC(MyBaseSpider):
+    doctypes = ['JUD C', 'D', 'SAT']
     name = 'pbc'
     start_urls = ['http://oris.co.palm-beach.fl.us/or_web1/new_sch.asp']
     id = 'http://oris.co.palm-beach.fl.us'
@@ -41,32 +39,6 @@ class PBC(MyBaseSpider):
     init_start_date = date.today() - relativedelta(years=10)
     init_days_increment = 7
     page_size = 2000
-
-    def __init__(self, *args, **kwargs):
-        super(PBC, self).__init__(*args, **kwargs)
-        assert kwargs.get('mysql_url')
-        self.mysql_url = kwargs.get('mysql_url')
-        self.doctypes = [kwargs['doctypes']] if kwargs.get('doctypes', None) else doctypes
-        self._days_increment = relativedelta(days=self.init_days_increment)
-        if 'start_date' in kwargs:
-            self._from_date = datetime.strptime(kwargs['start_date'],
-                                                '%m/%d/%Y').date()
-        else:
-            self._from_date = self.init_start_date
-
-        if 'end_date' in kwargs:
-            self._max_date = datetime.strptime(kwargs['end_date'],
-                                              '%m/%d/%Y').date()
-        else:
-            self._max_date = self._from_date + self._days_increment
-
-        if self._from_date + self._days_increment <= self._max_date:
-            self._to_date = self._from_date + self._days_increment
-        else:
-            self._to_date = self._max_date
-
-        self._max_date = self._max_date if self._max_date <= date.today() else date.today()
-        assert self._from_date < self._to_date
 
     def start_requests(self):
         print('starting requests')

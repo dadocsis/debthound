@@ -30,43 +30,38 @@ def run(job, interval: int, api_address):
 
 # todo: params (ie start end scrape date) should come from database
 def job(api_address: str):
-    current_dt = datetime.datetime.utcnow()
+    est = pytz.timezone('EST')
+    current_dt = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+    current_dt_est = current_dt.astimezone(est)  # this should convert from utc to est
     rsp = requests.get('{0}{1}'.format(api_address, SCHEDULES_EP))
     schedules = rsp.json(object_hook=deserialize_dates_and_times)
     run_now = []
     for sched in schedules:
-        last_poll_date = sched['site']['last_poll_datetime']
+        last_poll_date_est = pytz.UTC.localize(sched['site']['last_poll_datetime']).astimezone(est)
         if sched['exact']:
-            date_time_to_run = datetime.datetime(year=current_dt.year, month=current_dt.month,
-                                             day=sched['day'], hour=sched['time'].hour,
-                                             minute=sched['time'].minute, second=sched['time'].second)
+            date_time_to_run_est = datetime.datetime(year=current_dt.year, month=current_dt.month, day=sched['day'],
+                                                     hour=sched['time'].hour, minute=sched['time'].minute,
+                                                     second=sched['time'].second, tzinfo=pytz.UTC).astimezone(est)
         else:
-            first_day_of_week = current_dt - datetime.timedelta(days=current_dt.weekday())
-            day_to_run = first_day_of_week + datetime.timedelta(days=sched['day'] -1)
-            date_time_to_run = datetime.datetime(year=current_dt.year,
-                                            month=day_to_run.month,
-                                            day=day_to_run.day,
-                                            hour=sched['time'].hour,
-                                            minute=sched['time'].minute,
-                                            second=sched['time'].second)
-        if sched['end'] >= date_time_to_run.date() >= sched['start']:
+            first_day_of_week_utc = current_dt - datetime.timedelta(days=current_dt.weekday())
+            day_to_run_utc = first_day_of_week_utc + datetime.timedelta(days=sched['day'] - 1)
+            date_time_to_run_est = datetime.datetime(year=current_dt_est.year, month=day_to_run_utc.month,
+                                                     day=day_to_run_utc.day, hour=sched['time'].hour,
+                                                     minute=sched['time'].minute, second=sched['time'].second,
+                                                     tzinfo=pytz.UTC).astimezone(est)
+        if sched['end'] >= date_time_to_run_est.date() >= sched['start']:
             run_sched = {
                 'project': 'debthound',
                 'spider': sched['site']['spider_name'],
                 'params': {
                     'start_date': pytz.utc.localize(sched['site']['last_scrape_datetime']).astimezone(EST).strftime(DATE_FMT),
-                    'end_date': pytz.utc.localize(date_time_to_run).astimezone(EST).strftime(DATE_FMT)
+                    'end_date': date_time_to_run_est.strftime(DATE_FMT)
                 }
             }
-
-            if last_poll_date < date_time_to_run and date_time_to_run.day == current_dt.day:
-                if sched['time'] <= current_dt.time():
+            #  since UTC does not have dst we have to adjust when we are in dst
+            if last_poll_date_est < date_time_to_run_est and date_time_to_run_est.day == current_dt_est.day:
+                if sched['time'] <= current_dt_est.time():
                     run_now.append(run_sched)
-            # if the daemon wasnt running on the day it was scheduled
-            elif current_dt.day > date_time_to_run.day \
-                    and date_time_to_run.date() > last_poll_date.date() > sched['site']['last_scrape_datetime'].date():
-                run_sched['params']['end_date'] = pytz.utc.localize(last_poll_date).astimezone(EST).strftime(DATE_FMT)
-                run_now.append(run_sched)
 
     spiders = []
     run_now = sorted(run_now, key=lambda x: x['params']['end_date'], reverse=False)
@@ -113,18 +108,19 @@ def serialize_dates_and_times(obj):
     return obj
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-i", type=int, dest='interval',
-                    help="polling interval in minutes",
-                    required=True)
-parser.add_argument("--address", type=str, dest='address',
-                    help="polling interval in minutes",
-                    required=False, default="http://127.0.0.1:80/")
-args = parser.parse_args()
-try:
-    run(job, args.interval, args.address)
-except KeyboardInterrupt as kex:
-    print("shutting down")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", type=int, dest='interval',
+                        help="polling interval in minutes",
+                        required=True)
+    parser.add_argument("--address", type=str, dest='address',
+                        help="polling interval in minutes",
+                        required=False, default="http://127.0.0.1:80/")
+    args = parser.parse_args()
+    try:
+        run(job, args.interval, args.address)
+    except KeyboardInterrupt as kex:
+        print("shutting down")
 
 
 # python ./schd/run.py -i 1 --address http://127.0.0.1:5000/

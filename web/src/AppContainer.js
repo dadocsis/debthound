@@ -10,7 +10,7 @@ import LablesStore from './stores/LabelsStore'
 import {Container} from 'flux/utils';
 import './App.css';
 import {fetchLeads, getDocsForLead, fetchLables, deleteLabel, deleteSchedule, updateParty,
-        batchUpdateLeadLabels, updateLead, userLogin, fetchSchedules, fetchParties} from './data/DataManager';
+        batchUpdateLeadLabels, updateLead, userLogin, fetchSchedules, fetchParties, getDocumentImage} from './data/DataManager';
 import Actions from './Actions'
 import DraftLabelStore from "./stores/DraftLabelStore";
 import AuthenticatedUserStore from './stores/AuthenticatedUserStore'
@@ -158,7 +158,8 @@ function getState() {
     fetchParties,
     parties: PartyStore.getState(),
     updateParty,
-    toggleBlackList: Actions.partyBlackListToggle
+    toggleBlackList: Actions.partyBlackListToggle,
+    getDocumentImage
   };
 }
 

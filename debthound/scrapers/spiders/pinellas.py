@@ -40,7 +40,6 @@ except requests.exceptions.SSLError as err:
     print('That might have worked.')
 
 
-
 class Pinellas(Broward):
     name = 'pinellas'
     start_urls = ['https://officialrecords.mypinellasclerk.org/search/SearchTypeDocType']

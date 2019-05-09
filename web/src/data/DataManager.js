@@ -1,7 +1,7 @@
 import Actions from '../Actions'
 import {getEntities, getDocumentsForLead, saveLabel, getLables, deleteLabel as _deleteLabel,
         deleteSchedule as _deleteSchedule, updateLeadLables, updateLead as _updateLead, loginUser, getSchedules,
-        saveSchedule, getSites, getParties, putParty} from "./api";
+        saveSchedule, getSites, getParties, putParty, getDocImage} from "./api";
 
 export const fetchLeads = (page=1, args={}) => {
     Actions.getEntities();
@@ -88,4 +88,11 @@ export const fetchParties = (page=1, args={}) => {
 export const updateParty = (party) => {
     Actions.updateParty(party);
     putParty(party, Actions.partyUpdated)
+};
+
+export const getDocumentImage = (id) => {
+    Actions.getDocumentImage(id);
+    getDocImage(id, (blob, fileType) => {
+        Actions.rcvDocumentImage(blob, fileType)
+    })
 };

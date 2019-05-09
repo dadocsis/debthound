@@ -16,6 +16,13 @@ class SelectedLeadStore extends ReduceStore{
         switch (action.type) {
             case ActionTypes.VIEW_LEAD:
                 return state.merge(Map({isLoading: action.id !== -1, id: action.id}));
+            case ActionTypes.GET_DOC_IMAGE:
+                return state.merge(Map({image: {isLoading: true, id: action.id}}));
+            case ActionTypes.RCV_DOC_IMAGE:
+                let _id = state.get('image').id;
+                let _fname = _id + action.fileType;
+                return state.merge(Map({image: {
+                    isLoading: false, imageData: action.url, imageFileName: _fname, id:_id}}));
             case ActionTypes.RCV_LEAD_DOCS:
                 return state.merge(Map({
                     docs: fromJS(action.docs),

@@ -35,7 +35,9 @@ export const ActionTypes = {
     RCV_PARTIES: 'RCV_PARTIES',
     SHOW_BLACKLIST_PARTIES: 'SHOW_BLACKLIST_PARTIES',
     PARTY_UPDATED: 'PARTY_UPDATED',
-    UPDATE_PARTY: 'UPDATE_PARTY'
+    UPDATE_PARTY: 'UPDATE_PARTY',
+    GET_DOC_IMAGE: 'GET_DOC_IMAGE',
+    RCV_DOC_IMAGE: 'RCV_DOC_IMAGE'
 
 };
 
@@ -246,7 +248,25 @@ export const ActionTypes = {
             type: ActionTypes.SHOW_BLACKLIST_PARTIES,
             value: on
         })
+    },
+    getDocumentImage(id) {
+      dispatcher.dispatch({
+        type: ActionTypes.GET_DOC_IMAGE,
+        id: id
+      })
+    },
+   rcvDocumentImage(blob, contentType) {
+      let fileType = CONTENT_MAP[contentType];
+      if (!fileType) fileType = '.pdf';
+      let url = window.URL.createObjectURL(blob);
+      dispatcher.dispatch({
+        type: ActionTypes.RCV_DOC_IMAGE,
+        url,
+        fileType
+      })
     }
 };
+
+const CONTENT_MAP = {'application/pdf': '.pdf'};
 
  export default Actions;

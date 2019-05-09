@@ -4,6 +4,7 @@ import Pager from './Pager'
 import {MyMultiSelect, Label} from "./Common";
 
 const $ = window.$;
+const IMAGE_URL = '';
 
 const LeadToolbar = (props) => {
     let menu = React.createRef();
@@ -174,26 +175,36 @@ const LeadDocs = (props) => {
                         <thead>
                         <caption>{dtg.doc_type.get('description')}</caption>
                         <tr>
+                            <th scope="col">image</th>
                             <th scope="col">date</th>
                             <th scope="col">party1</th>
                             <th scope="col">party2</th>
-                            <th scope="col">document image</th>
                             <th scope="col">cross name</th>
                             <th scope="col">legal</th>
                             <th scope="col">cfn</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {dtg.docs.map((d =>
-                            <tr key={d.get('id')}>
+                        {dtg.docs.map((d => { return (
+                            <tr key={d.get('id')} id={d.get('id')}>
+                                <td className='text-truncate d-inline-block' style={{maxWidth: '150px'}}>
+                                  {props.image && props.image.imageData && props.image.id === d.get('id') &&
+                                     <a href={props.image.imageData} target='_blank' >
+                                    <i className="far fa-file-alt"></i> </a> ||
+                                  <button type='' className="btn-sm btn" onClick={e => props.getDocumentImage(d.get('id'))}>
+                                    {props.image && props.image.isLoading && props.image.id === d.get('id') && <Loader type="Puff" color="#00BFFF" height="8"  width="8"/> ||
+                                    <i className="fas fa-file-download"></i>}</button>
+                                  }
+                                </td>
                                 <td className='text-nowrap'>{d.get('date')}</td>
                                 <td>{d.get('party1')}</td>
                                 <td>{d.get('party2')}</td>
-                                <td className='text-truncate d-inline-block' style={{maxWidth: '150px'}}><a target='_blank' href={d.get('image_uri')}>{d.get('image_uri')} </a> </td>
+                                  {/*<a target='_blank' href={d.get('image_uri')}>{d.get('image_uri')} </a> </td>*/}
                                 <td>{d.get('cross_name')}</td>
                                 <td>{d.get('legal')}</td>
                                 <td>{d.get('cfn')}</td>
-                            </tr>
+
+                            </tr>) }
                         ))}
                         </tbody>
                     </table>
@@ -238,7 +249,8 @@ const Lead = (props) => {
                 <span className="badge badge-primary badge-pill d-table">{props.lead.get('document_facts').size}</span>
              </div>
                 { !isLoading && expandedLead &&
-                    <LeadDocs docs={props.selectedLead.get('docs')} />
+                    <LeadDocs docs={props.selectedLead.get('docs')} getDocumentImage={props.getDocumentImage}
+                     image={props.selectedLead.get('image')}/>
                 }
         { isLoading && expandedLead &&
             <Loader

@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, make_response
 from flask_restful import Resource
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload, contains_eager
@@ -9,6 +9,7 @@ from web_api.api import schemas as s
 
 from web_api.commons.pagination import paginate
 from web_api.auth.helpers import jwt_or_local_only as jwt_required
+from web_api.commons.images import handler_factory
 
 
 class DocumentResource(Resource):
@@ -242,3 +243,14 @@ class Entity(Resource):
 
         db.session.commit()
         return schema.dump(from_db).data
+
+
+class Images(Resource):
+    method_decorators = [jwt_required]
+
+    def get(self, id):
+        doc = db.session.query(m.Document).get_or_404(id)
+        resp = handler_factory(doc.site).handle(doc)
+        f_rsp = make_response(resp.content)
+        f_rsp.headers['content-type'] = resp.headers['content-type']
+        return f_rsp

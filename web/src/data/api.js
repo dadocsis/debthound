@@ -320,3 +320,17 @@ export const putParty = (party, func, ehandle=defaultEhandle) => {
         rsp.json().then(json => func(json))
     }, ehandle)
 };
+
+export const getDocImage = (doc_id, func, ehandle=defaultEhandle) => {
+  fetch(getUrl('/api/v1/images/' + doc_id), {
+        headers : {
+          'Authorization': getAuthHeader()
+        }
+  }).then(rsp => {
+        if (!rsp.ok){
+            ehandle(rsp);
+            return;
+        }
+        rsp.blob().then(blob => func(blob, rsp.headers.get('content-type')))
+    }, ehandle)
+};
