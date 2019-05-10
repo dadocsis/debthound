@@ -60,9 +60,11 @@ def job(api_address: str):
                     'end_date': date_time_to_run_est.strftime(DATE_FMT)
                 }
             }
-            if last_poll_date_est < date_time_to_run_est and current_dt_est >= date_time_to_run_est:
-                if sched['time'] <= current_dt_est.time():
+            if last_poll_date_est < date_time_to_run_est <= current_dt_est:
                     run_now.append(run_sched)
+            # else:
+            #     print('{0}, Scheduled for today but not time to run'.format(sched['site']['spider_name']))
+            #     print(f'last poll date: {last_poll_date_est} < time to run: {date_time_to_run_est} is {last_poll_date_est < date_time_to_run_est} and <= {current_dt_est} is {date_time_to_run_est <= current_dt_est}')
 
     spiders = []
     run_now = sorted(run_now, key=lambda x: x['params']['end_date'], reverse=False)

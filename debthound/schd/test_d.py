@@ -557,11 +557,18 @@ def test_schedules_dst(one_schedule):
         m.put(p, json={'put': True})
         with freeze_time(datetime(2019, 2, 5, 00, 1)) as f:  # non dst
             run.job(address)
+            lpd = m.request_history[2].json()['site']['last_poll_datetime']
+            assert lpd == '2019-02-05T00:01:00+00:00'
             assert '/api/v1/runspiderrequests' in m.request_history[1].url
+
 
             f.move_to(datetime(2019, 5, 7, 00, 1))  # dst
             run.job(address)
+            lpd = m.request_history[5].json()['site']['last_poll_datetime']
+            assert lpd == '2019-05-07T00:01:00+00:00'
             assert '/api/v1/runspiderrequests' in m.request_history[4].url
+            # we assert both scheds were ran but also the last scrape times did
+            # not change due to dst
 
 
 def test_schedule_not_time_to_run(one_schedule):
@@ -626,142 +633,142 @@ def test_sched_should_run():
                         m.request_history])
             
 #
-# def test_pinellas_sched():
-#
-#     s = [
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 52,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 2,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         },
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 53,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 1,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         },
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 54,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 6,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         },
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 55,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 5,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         },
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 56,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 3,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         },
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 57,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 4,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         },
-#         {
-#             "time": "18:30:00",
-#             "site": {
-#                 "creds": None,
-#                 "spider_name": "pinellas",
-#                 "authtype": None,
-#                 "id": 4,
-#                 "last_poll_datetime": "2019-05-10T01:20:19+00:00",
-#                 "base_url": "https://officialrecords.mypinellasclerk.org",
-#                 "last_scrape_datetime": "2019-05-08T00:00:00+00:00"
-#             },
-#             "id": 58,
-#             "exact": False,
-#             "end": "9999-12-31",
-#             "day": 7,
-#             "start": "2019-04-06",
-#             "site_id": 4
-#         }]
-#     with requests_mock.Mocker() as m:
-#         m.get('/' + run.SCHEDULES_EP, json=s)
-#         m.post('/' + run.RUN_REQUEST_EP, json={})
-#         p = re.compile(
-#             re.escape(address) + re.escape(run.SCHEDULES_EP) + r'/\d')
-#         m.put(p, json={'put': True})
-#         with freeze_time(datetime(2019, 5, 10, 1, 27, 53)) as f:
-#             run.job(address)
-#             assert any(['/api/v1/runspiderrequests' in r.url for r in
-#                         m.request_history])
+def test_pinellas_sched():
+
+    s = [ {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 52,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 2,
+            "start": "2019-04-06",
+            "site_id": 4
+        },
+        {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 53,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 1,
+            "start": "2019-04-06",
+            "site_id": 4
+        },
+        {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 54,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 6,
+            "start": "2019-04-06",
+            "site_id": 4
+        },
+        {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 55,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 5,
+            "start": "2019-04-06",
+            "site_id": 4
+        },
+        {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 56,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 3,
+            "start": "2019-04-06",
+            "site_id": 4
+        },
+        {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 57,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 4,
+            "start": "2019-04-06",
+            "site_id": 4
+        },
+        {
+            "time": "18:30:00",
+            "site": {
+                "creds": None,
+                "spider_name": "pinellas",
+                "authtype": None,
+                "id": 4,
+                "last_poll_datetime": "2019-05-10T18:26:32+00:00",
+                "base_url": "https://officialrecords.mypinellasclerk.org",
+                "last_scrape_datetime": "2019-05-09T00:00:00+00:00"
+            },
+            "id": 58,
+            "exact": False,
+            "end": "9999-12-31",
+            "day": 7,
+            "start": "2019-04-06",
+            "site_id": 4
+        }
+    ]
+    with requests_mock.Mocker() as m:
+        m.get('/' + run.SCHEDULES_EP, json=s)
+        m.post('/' + run.RUN_REQUEST_EP, json={})
+        p = re.compile(
+            re.escape(address) + re.escape(run.SCHEDULES_EP) + r'/\d')
+        m.put(p, json={'put': True})
+        with freeze_time(datetime(2019, 5, 10, 18, 30, 53)) as f:
+            run.job(address)
+            assert any(['/api/v1/runspiderrequests' in r.url for r in
+                        m.request_history])
