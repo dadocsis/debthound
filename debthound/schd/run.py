@@ -30,7 +30,7 @@ def run(job, interval: int, api_address):
 
 # todo: params (ie start end scrape date) should come from database
 def job(api_address: str):
-    est = pytz.timezone('EST')
+    est = pytz.timezone('America/New_York')
     current_dt = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
     current_dt_est = current_dt.astimezone(est)  # this should convert from utc to est
     rsp = requests.get('{0}{1}'.format(api_address, SCHEDULES_EP))
