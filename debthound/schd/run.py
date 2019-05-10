@@ -30,7 +30,7 @@ def run(job, interval: int, api_address):
 
 # todo: params (ie start end scrape date) should come from database
 def job(api_address: str):
-    est = pytz.timezone('America/New_York')
+    est = pytz.timezone('EST')
     current_dt = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
     current_dt_est = current_dt.astimezone(est)  # this should convert from utc to est
     rsp = requests.get('{0}{1}'.format(api_address, SCHEDULES_EP))
@@ -45,7 +45,7 @@ def job(api_address: str):
         else:
             first_day_of_week_utc = current_dt - datetime.timedelta(days=current_dt.weekday())
             day_to_run_utc = first_day_of_week_utc + datetime.timedelta(days=sched['day'] - 1)
-            date_time_to_run_est = datetime.datetime(year=current_dt_est.year, month=day_to_run_utc.month,
+            date_time_to_run_est = datetime.datetime(year=current_dt.year, month=day_to_run_utc.month,
                                                      day=day_to_run_utc.day, hour=sched['time'].hour,
                                                      minute=sched['time'].minute, second=sched['time'].second,
                                                      tzinfo=pytz.UTC).astimezone(est)
@@ -60,7 +60,6 @@ def job(api_address: str):
                     'end_date': date_time_to_run_est.strftime(DATE_FMT)
                 }
             }
-            #  since UTC does not have dst we have to adjust when we are in dst
             if last_poll_date_est < date_time_to_run_est and current_dt_est >= date_time_to_run_est:
                 if sched['time'] <= current_dt_est.time():
                     run_now.append(run_sched)
