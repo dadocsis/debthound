@@ -28,11 +28,11 @@ class Polk(MyBaseSpider):
     init_days_increment = 7
     page_size = 10000
 
-    _doctypes = ['CCJ', 'DEED', 'S JDG']
+    _doctypes = ['CCJ', 'DEED', 'SATIS']
     _doctype_maps = {
         'CCJ': 'JUD C',
         'DEED': 'D',
-        'S JDG': 'SAT'
+        'SATIS': 'SAT'
     }
 
     def make_doctype_request(self, doctype, from_date, to_date):
@@ -58,6 +58,9 @@ class Polk(MyBaseSpider):
     def parse_details(self, response):
         meta = response.meta
         d = json.loads(response.body_as_unicode())
+        # from my research it appears CCJ and SAT that we care about do not have reverse links
+        if 'reverse_links' in d: return
+        if 'links' in d: return
         rdate = datetime.strptime(d['rec_date'], '%Y-%m-%dT%H:%M:%S')
         try:
             item = PBCPublicRecord(
