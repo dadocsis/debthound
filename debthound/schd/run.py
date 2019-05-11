@@ -31,6 +31,7 @@ def run(job, interval: int, api_address):
 # todo: params (ie start end scrape date) should come from database
 def job(api_address: str):
     est = pytz.timezone('America/New_York')
+    estn = pytz.timezone('EST')
     current_dt = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
     current_dt_est = current_dt.astimezone(est)  # this should convert from utc to est
     rsp = requests.get('{0}{1}'.format(api_address, SCHEDULES_EP))
@@ -48,7 +49,7 @@ def job(api_address: str):
             date_time_to_run_est = datetime.datetime(year=current_dt.year, month=day_to_run_utc.month,
                                                      day=day_to_run_utc.day, hour=sched['time'].hour,
                                                      minute=sched['time'].minute, second=sched['time'].second,
-                                                     tzinfo=pytz.UTC).astimezone(est)
+                                                     tzinfo=pytz.UTC).astimezone(estn)
         if date_time_to_run_est.day != current_dt_est.day:
             continue
         if sched['end'] >= date_time_to_run_est.date() >= sched['start']:
