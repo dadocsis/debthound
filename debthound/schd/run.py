@@ -38,7 +38,7 @@ def job(api_address: str):
     schedules = rsp.json(object_hook=deserialize_dates_and_times)
     run_now = []
     for sched in schedules:
-        last_poll_date_est = pytz.UTC.localize(sched['site']['last_poll_datetime']).astimezone(est)
+        last_poll_date_est = pytz.UTC.localize(sched['site']['last_poll_datetime']).astimezone(est_edt)
         if sched['exact']:
             continue  # not doing this now
             # date_time_to_run_est = datetime.datetime(year=current_dt.year, month=current_dt.month, day=sched['day'],
