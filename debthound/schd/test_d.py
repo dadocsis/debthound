@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from freezegun import freeze_time
 from dateutil.tz import gettz
+import pytz
 import requests_mock
 import run
 
@@ -37,18 +38,18 @@ dt1 = datetime(2019, 2, 4, 12, 39, tzinfo=gettz()).isoformat()
 
 def test_schedules_should_run_est(one_schedule):
     """
-    when est (non dst) the a reoccurring one_schedule should run on the same time
-    this test should prove the one_schedule will be ran on the same time whether in dst or not
+    when est (non dst) the a 7pm sched is -5 behind UTC
+
     """
     with requests_mock.Mocker() as m:
         m.get('/' + run.SCHEDULES_EP, json=one_schedule)
         m.post('/' + run.RUN_REQUEST_EP, json={})
         p = re.compile(re.escape(address) + re.escape(run.SCHEDULES_EP) + r'/\d')
         m.put(p, json={'put': True})
-        with freeze_time(datetime(2019, 2, 5, 00, 1)) as f:  # non dst
+        with freeze_time(datetime(2019, 2, 6, 00, 1)) as f:  # non dst
             run.job(address)
             lpd = m.request_history[2].json()['site']['last_poll_datetime']
-            assert lpd == '2019-02-05T00:01:00+00:00'
+            assert lpd == '2019-02-06T00:01:00+00:00'
             assert '/api/v1/runspiderrequests' in m.request_history[1].url
 
 
@@ -86,7 +87,7 @@ def test_sched_should_run_edt():
             "id": 19,
             "exact": False,
             "end": "9999-12-31",
-            "day": 5,
+            "day": 4,
             "start": "2018-11-30",
             "site_id": 1
     }]
@@ -756,13 +757,30 @@ def test_all():
     #one_schedule[0]['site']['last_scrape_datetime'] = '2019-4-30T10:00:00+00:00'
     #one_schedule[0]['site']['last_poll_datetime'] = '2019-05-01T8:50:00+00:00'
     for sched in s:
-        sched["last_poll_datetime"] = "2019-05-12T22:50:33+00:00"
+        sched["last_poll_datetime"] = "2019-05-12T18:50:33+00:00"
     with requests_mock.Mocker() as m:
         m.get('/' + run.SCHEDULES_EP, json=s)
         m.post('/' + run.RUN_REQUEST_EP, json={})
         p = re.compile(
             re.escape(address) + re.escape(run.SCHEDULES_EP) + r'/\d')
         m.put(p, json={'put': True})
-        with freeze_time(datetime(2019, 5, 13, 1, 2)) as f:
+        with freeze_time(datetime(2019, 5, 12, 23)) as f:
             run.job(address)
             #assert all(['/api/v1/runspiderrequests' not in r.url for r in m.request_history])
+
+def test_rand():
+    #seven_pm_created_during_est = datetime(2019, 2, 1, tzinfo=)
+    utc = pytz.UTC
+    est_edt = pytz.timezone('America/New_York')
+    #  both if these schedules are 8
+    sched_8pm_in_utc_during_est = datetime(2019, 2, 2, tzinfo=utc)
+    sched_8pm_in_utc_during_edt = datetime(2019, 5, 13, tzinfo=utc)
+    with freeze_time(datetime(2019, 2, 2)) as f:
+        now_in_est = datetime.utcnow().replace(tzinfo=pytz.UTC).astimezone(est_edt)
+        sched_8pm_in_utc_toestedt_during_est = sched_8pm_in_utc_during_est.astimezone(est_edt)
+        f.move_to(datetime(2019, 5, 13))
+        uct_now_in_dst = datetime.utcnow().replace(tzinfo=pytz.UTC).astimezone(est_edt)
+        sched_8pm_in_utc_toestedt_during_edt = sched_8pm_in_utc_during_edt.astimezone(est_edt)
+        fmt = "%m-%d-%y %I:%M:%S %p"
+        print(f'\nnow in est {now_in_est.strftime(fmt)}\nnow in dst {uct_now_in_dst.strftime(fmt)}')
+        print(f'\nsched in est {sched_8pm_in_utc_toestedt_during_est.strftime(fmt)}\nsched in dst {sched_8pm_in_utc_toestedt_during_edt.strftime(fmt)}')

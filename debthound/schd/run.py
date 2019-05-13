@@ -31,25 +31,26 @@ def run(job, interval: int, api_address):
 # todo: params (ie start end scrape date) should come from database
 def job(api_address: str):
     est = pytz.timezone('EST')
-    estn = pytz.timezone('America/New_York')
+    est_edt = pytz.timezone('America/New_York')
     current_dt = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
-    current_dt_est = current_dt.astimezone(estn)  # this should convert from utc to est
+    current_dt_est = current_dt.astimezone(est_edt)  # this should convert from utc to est
     rsp = requests.get('{0}{1}'.format(api_address, SCHEDULES_EP))
     schedules = rsp.json(object_hook=deserialize_dates_and_times)
     run_now = []
     for sched in schedules:
-        last_poll_date_est = pytz.UTC.localize(sched['site']['last_poll_datetime']).astimezone(estn)
+        last_poll_date_est = pytz.UTC.localize(sched['site']['last_poll_datetime']).astimezone(est)
         if sched['exact']:
-            date_time_to_run_est = datetime.datetime(year=current_dt.year, month=current_dt.month, day=sched['day'],
-                                                     hour=sched['time'].hour, minute=sched['time'].minute,
-                                                     second=sched['time'].second, tzinfo=pytz.UTC).astimezone(estn)
+            continue  # not doing this now
+            # date_time_to_run_est = datetime.datetime(year=current_dt.year, month=current_dt.month, day=sched['day'],
+            #                                          hour=sched['time'].hour, minute=sched['time'].minute,
+            #                                          second=sched['time'].second, tzinfo=pytz.UTC).astimezone(est_edt)
         else:
-            first_day_of_week_utc = current_dt - datetime.timedelta(days=current_dt.weekday())
-            day_to_run_utc = first_day_of_week_utc + datetime.timedelta(days=sched['day'] - 1)
-            date_time_to_run_est = datetime.datetime(year=current_dt.year, month=day_to_run_utc.month,
-                                                     day=day_to_run_utc.day, hour=sched['time'].hour,
+            first_day_of_week_est = current_dt_est - datetime.timedelta(days=current_dt_est.weekday())
+            day_to_run_est = first_day_of_week_est + datetime.timedelta(days=sched['day'] - 1)
+            date_time_to_run_est = datetime.datetime(year=current_dt.year, month=day_to_run_est.month,
+                                                     day=day_to_run_est.day, hour=sched['time'].hour,
                                                      minute=sched['time'].minute, second=sched['time'].second,
-                                                     tzinfo=pytz.UTC).astimezone(est)
+                                                     tzinfo=pytz.UTC).astimezone(est).replace(day=day_to_run_est.day)
         if date_time_to_run_est.day != current_dt_est.day:
             continue
         if sched['end'] >= date_time_to_run_est.date() >= sched['start']:
