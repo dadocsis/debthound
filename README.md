@@ -18,7 +18,7 @@ set http_proxy=http://localhost:17560
 
 ##basic deploy instructions
 - git pull
-- (from debthound library folder)rsync -avP debthound/ /opt/debthound/debthound
+- (from debthound library folder)sudo rsync -vP debthound/ /opt/debthound/debthound
 - sudo su
 - cd /opt/debthound/debthound
 - . /opt/debthound/py_venv/bin/activate
