@@ -137,8 +137,6 @@ class Hillsborough(MyBaseSpider):
 
             else:
                 logging.getLogger().info(f'no records where found for the the following: {info}')
-                from scrapy.shell import inspect_response
-                inspect_response(response, self)
                 yield self.go_to_next_date_range(old_meta, session)
 
             # go to next date range search
