@@ -2,7 +2,6 @@ import logging
 from data_api.models import SessionContext, SiteScrapeLog, Site, SiteScrapeLogDetails
 
 
-
 class LogToMyDBHandler(logging.Handler):
     def __init__(self, sql_conn_str, log_id):
         super(LogToMyDBHandler, self).__init__(logging.INFO)

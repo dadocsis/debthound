@@ -42,7 +42,7 @@ file.setLevel(logging.INFO)
 logger.addHandler(file)
 
 settings = get_project_settings()
-settings.set('LOG_LEVEL', 'INFO')
+settings.set('LOG_LEVEL', 'ERROR')
 process = CrawlerProcess(settings)
 process.crawl(spider, start_date=start_date, end_date=end_date)
 process.start()

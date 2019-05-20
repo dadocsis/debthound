@@ -30,7 +30,7 @@ def get_form_data(search_entry, from_date, to_date):
 
 
 class PBC(MyBaseSpider):
-    doctypes = ['JUD C', 'D', 'SAT']
+    _doctypes = ['JUD C', 'D', 'SAT']
     name = 'pbc'
     start_urls = ['http://oris.co.palm-beach.fl.us/or_web1/new_sch.asp']
     id = 'http://oris.co.palm-beach.fl.us'

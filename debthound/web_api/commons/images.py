@@ -1,9 +1,11 @@
 import abc
 from lxml import html
-from urllib.parse import urlencode
+from urllib.parse import urlencode, parse_qs
 
 import requests
 from werkzeug.contrib.cache import SimpleCache
+from urllib3.response import HTTPResponse
+from urllib3.packages.six.moves import http_client as httplib
 
 from data_api.models import Document, Site
 
@@ -108,8 +110,55 @@ class Polk(ImageHandlerBase):
         return s.post('https://apps.polkcountyclerk.net/browserviewor/api/pdf', json=parms, verify=False)
 
 
+class Hills(ImageHandlerBase):
+    handles = 'hillsborough'
+
+    doc_type_map = {
+        'JUD C': 'CCJ',
+        'D': 'D',
+        'SAT': 'SAT'
+    }
+
+    def handle(self, record: Document):
+        base = 'http://pubrec3.hillsclerk.com/oncore/'
+        qs = record.image_uri.split('?')[1]
+        url1 = base + record.image_uri
+        url2 = base + 'DetailTop.aspx?ref=search'
+        url3 = f'{base}?{qs}'
+        qs = parse_qs(qs)
+        url4 = base + f'ImageBrowser/default.aspx?id={qs["id"][0]}&dtk={self.doc_type_map[record.doc_type.name]}'
+        url5 = base + 'ImageBrowser/ShowPDF.aspx'
+        s = requests.session()
+        s.get(url1)
+        s.get(url2)
+        s.get(url3)
+        s.get(url4)
+        rsp = s.get(url5, headers={'Referer': url4, 'Accept-Encoding': 'gzip, deflate', 'Connection': 'keep-alive'}, stream=False)
+        return rsp
+
+
 def handler_factory(site: Site) -> ImageHandlerBase:
     handler = next(iter([cls() for cls in ImageHandlerBase.__subclasses__() if cls.handles == site.spider_name]), None)
     if not handler:
         handler = Default()
     return handler
+
+
+# have to monkey patch as urlib would error doing a chumked stream with hillsborough pdfs
+def _update_chunk_length(self):
+    # First, we'll figure out length of a chunk and then
+    # we'll try to read it from socket.
+    if self.chunk_left is not None:
+        return
+    line = self._fp.fp.readline()
+    line = line.split(b';', 1)[0]
+    line = (len(line) > 0 and line or "0")
+    try:
+        self.chunk_left = int(line, 16)
+    except ValueError:
+        # Invalid chunked protocol response, abort.
+        self.close()
+        raise httplib.IncompleteRead(line)
+
+
+HTTPResponse._update_chunk_length = _update_chunk_length
